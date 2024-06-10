@@ -1,88 +1,140 @@
-// component/Login.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useForm } from "react-hook-form";
 import {
   Box,
   Button,
+  FormControl,
+  FormLabel,
   Input,
   VStack,
   Heading,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
+  Flex,
+  useColorModeValue,
+  useColorMode,
+  useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { motion } from "framer-motion";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const Login = ({ setToken }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+const MotionBox = motion(Box);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(null); // Limpia el error anterior
+const Login = () => {
+  const { login } = useContext(AuthContext);
+  const { register, handleSubmit } = useForm();
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const { colorMode, toggleColorMode } = useColorMode();
+  const toast = useToast();
 
+  const formBackground = useColorModeValue("white", "gray.700");
+  const textColor = useColorModeValue("gray.800", "white");
+  const inputBackground = useColorModeValue("gray.100", "gray.600");
+  const buttonBackground = useColorModeValue("blue.500", "blue.300");
+
+  const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/api-token-auth/",
-        {
-          username: email, // Asegúrate de que el backend espera 'username'
-          password,
-        }
-      );
-
-      setToken(response.data.token);
-      localStorage.setItem("token", response.data.token);
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Token ${response.data.token}`;
+      await login(data.email, data.password, toast); // Pasa toast a login
+      navigate("/");
     } catch (error) {
-      setError("Credenciales inválidas");
-      console.error("Error en el inicio de sesión:", error);
+      console.error("Login failed:", error);
     }
   };
 
   return (
-    <Box
-      w="400px"
-      mx="auto"
-      mt="20"
-      p="8"
-      borderWidth="1px"
-      borderRadius="md"
-      boxShadow="sm"
+    <Flex
+      minHeight="100vh"
+      justifyContent="center"
+      alignItems="center"
+      bg={useColorModeValue("gray.100", "gray.900")}
     >
-      <Heading as="h2" size="lg" mb="4" textAlign="center">
-        Iniciar Sesión
-      </Heading>
-      <form onSubmit={handleLogin}>
-        <VStack spacing={4} align="stretch">
-          <FormControl isInvalid={!!error}>
-            <FormLabel htmlFor="email">Email:</FormLabel>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Tu correo electrónico"
-            />
-          </FormControl>
-          <FormControl isInvalid={!!error}>
-            <FormLabel htmlFor="password">Contraseña:</FormLabel>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Tu contraseña"
-            />
-            <FormErrorMessage>{error}</FormErrorMessage>
-          </FormControl>
-          <Button type="submit" colorScheme="brand" width="100%">
-            Ingresar
-          </Button>
-        </VStack>
-      </form>
-    </Box>
+      <MotionBox
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        p="8"
+        borderWidth="1px"
+        borderRadius="md"
+        boxShadow="md"
+        bg={formBackground}
+        width="400px"
+      >
+        <Heading as="h1" size="lg" textAlign="center" mb="6" color={textColor}>
+          Iniciar Sesión
+        </Heading>
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <VStack spacing={4} align="stretch">
+            <FormControl>
+              <FormLabel htmlFor="email" color={textColor}>
+                Email:
+              </FormLabel>
+              <Input
+                id="email"
+                {...register("email")}
+                placeholder="Email"
+                bg={inputBackground}
+                color={textColor}
+                _focus={{
+                  borderColor: "blue.500",
+                  boxShadow: "outline",
+                }}
+                transition="all 0.2s ease-in-out"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="password" color={textColor}>
+                Contraseña:
+              </FormLabel>
+              <Input
+                id="password"
+                {...register("password")}
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                bg={inputBackground}
+                color={textColor}
+                _focus={{
+                  borderColor: "blue.500",
+                  boxShadow: "outline",
+                }}
+                transition="all 0.2s ease-in-out"
+              />
+              <Button
+                type="button"
+                mt="2"
+                size="sm"
+                onClick={() => setShowPassword(!showPassword)}
+                color={textColor}
+                variant="link"
+              >
+                {showPassword ? "Ocultar" : "Mostrar"} contraseña
+              </Button>
+            </FormControl>
+            <Button
+              colorScheme="blue"
+              type="submit"
+              bg={buttonBackground}
+              _hover={{
+                bg: useColorModeValue("blue.600", "blue.200"),
+              }}
+              transition="all 0.2s ease-in-out"
+            >
+              Iniciar Sesión
+            </Button>
+          </VStack>
+        </form>
+        <Button
+          onClick={toggleColorMode}
+          position="absolute"
+          top="2"
+          right="2"
+          variant="ghost"
+        >
+          {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+        </Button>
+      </MotionBox>
+    </Flex>
   );
 };
 

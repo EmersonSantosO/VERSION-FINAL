@@ -1,56 +1,86 @@
 import React, { useContext } from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
-  Flex,
-  Heading,
-  Spacer,
   Button,
+  Flex,
+  Spacer,
+  useColorModeValue,
   useColorMode,
-  IconButton,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { logout, user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const { colorMode, toggleColorMode } = useColorMode();
-  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const bgColor = useColorModeValue("gray.100", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+  const buttonBg = useColorModeValue("blue.500", "blue.300");
 
   return (
-    <Box bg={colorMode === "light" ? "white" : "gray.800"} px={4} py={2}>
-      <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-        <Heading
-          as="h1"
-          size="lg"
-          color={colorMode === "light" ? "gray.800" : "white"}
-        >
-          <Link to="/home">Tu App</Link>
-        </Heading>
-        <Flex alignItems={"center"}>
-          <IconButton
-            icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-            onClick={toggleColorMode}
-            mr={4}
-          />
-          {user && (
-            <>
-              <Button colorScheme="brand" variant="outline" mr={4}>
-                {user.nombre}
-              </Button>
-              <Button colorScheme="red" onClick={handleLogout}>
-                Cerrar Sesión
-              </Button>
-            </>
+    <Flex
+      as="nav"
+      p="4"
+      bg={bgColor}
+      color={textColor}
+      alignItems="center"
+      boxShadow="md"
+    >
+      <Box fontWeight="bold">
+        <Link to="/">Bazar App</Link>
+      </Box>
+      <Spacer />
+      {user ? (
+        <>
+          {user.rol === "administrador" && (
+            <Box mx="2">
+              <Link to="/admin">Administración</Link>
+            </Box>
           )}
-        </Flex>
-      </Flex>
-    </Box>
+          {user.rol === "administrador" && (
+            <Box mx="2">
+              <Link to="/usuarios">Gestionar Usuarios</Link>
+            </Box>
+          )}
+          {(user.rol === "administrador" || user.rol === "vendedor") && (
+            <Box mx="2">
+              <Link to="/productos/nuevo">Crear Producto</Link>
+            </Box>
+          )}
+          <Box>
+            <Button
+              onClick={logout}
+              colorScheme="blue"
+              bg={buttonBg}
+              _hover={{
+                bg: useColorModeValue("blue.600", "blue.200"),
+              }}
+            >
+              Cerrar sesión
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Box>
+          <Link to="/login">
+            <Button
+              colorScheme="blue"
+              bg={buttonBg}
+              _hover={{
+                bg: useColorModeValue("blue.600", "blue.200"),
+              }}
+            >
+              Iniciar sesión
+            </Button>
+          </Link>
+        </Box>
+      )}
+      <Button onClick={toggleColorMode} ml="4" variant="ghost">
+        {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+      </Button>
+    </Flex>
   );
 };
 

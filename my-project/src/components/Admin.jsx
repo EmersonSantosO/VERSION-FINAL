@@ -1,9 +1,7 @@
-// src/components/Admin.jsx
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import {
   Box,
   Button,
-  Input,
   VStack,
   Heading,
   FormControl,
@@ -17,30 +15,42 @@ import {
   useToast,
   Select,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useStore } from "../store";
+import theme from "../theme"; // Importa tu tema de colores
 
 const Admin = () => {
   const { token } = useContext(AuthContext);
-  const [users, setUsers] = useState([]);
-
-  // Estados para el formulario de nuevo usuario
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [jornada, setJornada] = useState("");
-  const [rol, setRol] = useState("");
-
+  const { users, setUsers } = useStore();
+  const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
+
+  // Colores adaptativos al tema
+  const bgColor = useColorModeValue(
+    theme.colors.background.light,
+    theme.colors.background.dark
+  );
+  const textColor = useColorModeValue(
+    theme.colors.text.light,
+    theme.colors.text.dark
+  );
+  const buttonBg = useColorModeValue(
+    theme.colors.brand.light,
+    theme.colors.brand.dark
+  );
+  const inputBg = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("/api/usuarios/");
+        const response = await axios.get("/usuarios/", {
+          headers: { Authorization: `Token ${token}` },
+        });
         setUsers(response.data);
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
@@ -57,18 +67,12 @@ const Admin = () => {
     if (token) {
       fetchUsers();
     }
-  }, [token, toast]);
+  }, [token, toast, setUsers]);
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = async (data) => {
     try {
-      const response = await axios.post("/api/usuarios/", {
-        email,
-        password,
-        nombre,
-        apellido,
-        telefono,
-        jornada,
-        rol,
+      const response = await axios.post("/usuarios/", data, {
+        headers: { Authorization: `Token ${token}` },
       });
       setUsers([...users, response.data]);
       toast({
@@ -78,6 +82,7 @@ const Admin = () => {
         duration: 5000,
         isClosable: true,
       });
+      reset();
     } catch (error) {
       console.error("Error al crear el usuario:", error);
       toast({
@@ -92,7 +97,9 @@ const Admin = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`/api/usuarios/${userId}/`);
+      await axios.delete(`/usuarios/${userId}/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
       setUsers(users.filter((user) => user.id !== userId));
       toast({
         title: "Usuario Eliminado",
@@ -102,7 +109,7 @@ const Admin = () => {
         isClosable: true,
       });
     } catch (error) {
-      console.error("Error al eliminar el usuario:", error);
+      console.error("Error al eliminar usuario:", error);
       toast({
         title: "Error",
         description: "Hubo un error al eliminar el usuario.",
@@ -114,40 +121,77 @@ const Admin = () => {
   };
 
   return (
-    <Box p="8">
+    <Box p="8" bg={bgColor} color={textColor}>
       <Heading as="h1" size="xl" mb="8">
-        Panel de Administración
+        Administración
       </Heading>
 
-      {/* Formulario para agregar usuarios */}
-      <Box mb="8" p="6" borderWidth="1px" borderRadius="md">
+      <Box
+        mb="8"
+        p="6"
+        borderWidth="1px"
+        borderRadius="md"
+        bg={useColorModeValue("white", "gray.700")}
+      >
         <Heading as="h3" size="lg" mb="4">
           Crear Nuevo Usuario
         </Heading>
-        <VStack spacing={4} align="stretch">
-          {/* ... (campos de entrada para email, password, nombre, apellido, telefono, jornada, rol - sin cambios) */}
-
-          <Button
-            leftIcon={<AddIcon />}
-            onClick={handleCreateUser}
-            colorScheme="brand"
-          >
-            Crear Usuario
-          </Button>
-        </VStack>
+        <form onSubmit={handleSubmit(handleCreateUser)}>
+          <VStack spacing={4} align="stretch">
+            <FormControl>
+              <FormLabel>Nombre:</FormLabel>
+              <Input
+                {...register("nombre")}
+                placeholder="Nombre"
+                bg={inputBg}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Email:</FormLabel>
+              <Input {...register("email")} placeholder="Email" bg={inputBg} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Contraseña:</FormLabel>
+              <Input
+                {...register("password")}
+                type="password"
+                placeholder="Contraseña"
+                bg={inputBg}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Rol:</FormLabel>
+              <Select
+                {...register("rol")}
+                placeholder="Selecciona un rol"
+                bg={inputBg}
+              >
+                <option value="administrador">Administrador</option>
+                <option value="vendedor">Vendedor</option>
+              </Select>
+            </FormControl>
+            <Button
+              leftIcon={<AddIcon />}
+              colorScheme="brand"
+              type="submit"
+              bg={buttonBg}
+              _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
+            >
+              Crear Usuario
+            </Button>
+          </VStack>
+        </form>
       </Box>
 
-      {/* Lista de usuarios */}
-      <Box p="6" borderWidth="1px" borderRadius="md">
+      <Box>
         <Heading as="h3" size="lg" mb="4">
           Lista de Usuarios
         </Heading>
-        <Table variant="simple">
+        <Table variant="simple" size="sm">
           <Thead>
             <Tr>
-              <Th>ID</Th>
-              <Th>Email</Th>
               <Th>Nombre</Th>
+              <Th>Email</Th>
               <Th>Rol</Th>
               <Th>Acciones</Th>
             </Tr>
@@ -155,9 +199,8 @@ const Admin = () => {
           <Tbody>
             {users.map((user) => (
               <Tr key={user.id}>
-                <Td>{user.id}</Td>
-                <Td>{user.email}</Td>
                 <Td>{user.nombre}</Td>
+                <Td>{user.email}</Td>
                 <Td>{user.rol}</Td>
                 <Td>
                   <IconButton

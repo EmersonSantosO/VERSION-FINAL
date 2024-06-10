@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
+// src/components/Home.jsx
+import React, { useEffect, useContext } from "react";
 import {
   Box,
   Button,
@@ -16,48 +17,47 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useStore } from "../store"; // Asegúrate de que la ruta sea correcta
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
-  const [products, setProducts] = useState([]);
+  const { user, isLoading: authLoading } = useContext(AuthContext);
+  const { products, setProducts } = useStore();
+  const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
-  // Estados para el formulario de nuevo producto
-  const [nuevoProducto, setNuevoProducto] = useState({
-    nombre: "",
-    descripcion: "",
-    codigo: "",
-    tipo: "aseo", // Valor inicial
-    precio: "",
-    imagen: null,
-  });
-
-  // Función para obtener productos (fuera de useEffect)
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get("/api/productos/");
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Error al obtener productos:", error);
-      toast({
-        title: "Error",
-        description: "Hubo un error al cargar los productos.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
   useEffect(() => {
-    fetchProducts();
-  }, [toast]);
+    // Solo ejecuta fetchProducts si el usuario está autenticado y no está cargando
+    if (user && !authLoading) {
+      const fetchProducts = async () => {
+        try {
+          const token = localStorage.getItem("token"); // Obtiene el token
+          const response = await axios.get("/productos/", {
+            headers: {
+              Authorization: `Token ${token}`, // Envía el token en la cabecera
+            },
+          });
+          setProducts(response.data); // Actualiza el estado con los productos
+        } catch (error) {
+          console.error("Error al obtener productos:", error);
+          toast({
+            title: "Error",
+            description: "Hubo un error al cargar los productos.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      };
+      fetchProducts();
+    }
+  }, [toast, setProducts, user, authLoading]);
 
   const handleDelete = async (productId) => {
     try {
-      await axios.delete(`/api/productos/${productId}/`);
+      await axios.delete(`/productos/${productId}/`);
       setProducts(products.filter((product) => product.id !== productId));
       toast({
         title: "Producto Eliminado",
@@ -78,59 +78,36 @@ const Home = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    if (e.target.name === "imagen") {
-      setNuevoProducto({
-        ...nuevoProducto,
-        imagen: e.target.files[0],
-      });
-    } else {
-      setNuevoProducto({
-        ...nuevoProducto,
-        [e.target.name]: e.target.value,
-      });
+  const handleCreateProduct = async (data) => {
+    const formData = new FormData();
+    for (const key in data) {
+      formData.append(key, data[key]);
     }
-  };
-
-  const handleSubmitProduct = async (e) => {
-    e.preventDefault();
 
     try {
-      const formData = new FormData();
-      for (const key in nuevoProducto) {
-        formData.append(key, nuevoProducto[key]);
-      }
+      const token = localStorage.getItem("token"); // Obtén el token
 
-      await axios.post("/api/productos/", formData, {
+      const response = await axios.post("/productos/", formData, {
         headers: {
+          Authorization: `Token ${token}`, // Incluye el token en la cabecera
           "Content-Type": "multipart/form-data",
         },
       });
+      setProducts([...products, response.data]);
+      reset();
 
-      // Reiniciar formulario
-      setNuevoProducto({
-        nombre: "",
-        descripcion: "",
-        codigo: "",
-        tipo: "aseo",
-        precio: "",
-        imagen: null,
-      });
-
-      // Actualizar lista de productos
-      fetchProducts();
       toast({
-        title: "Producto Agregado",
-        description: "El producto se ha agregado correctamente.",
+        title: "Producto Creado",
+        description: "El producto se ha creado correctamente.",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
     } catch (error) {
-      console.error("Error al agregar el producto:", error);
+      console.error("Error al crear producto:", error);
       toast({
         title: "Error",
-        description: "Hubo un error al agregar el producto.",
+        description: "Hubo un error al crear el producto.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -141,117 +118,92 @@ const Home = () => {
   return (
     <Box p="8">
       <Heading as="h1" size="xl" mb="8">
-        Bienvenido, {user ? user.nombre : "usuario"}
+        Bienvenido al Sistema de Bazar
       </Heading>
 
-      {/* Formulario para agregar productos */}
-      <Box mb="8" p="6" borderWidth="1px" borderRadius="md">
-        <Heading as="h3" size="lg" mb="4">
-          Agregar Nuevo Producto
-        </Heading>
-        <form onSubmit={handleSubmitProduct}>
-          <VStack spacing={4} align="stretch">
-            <FormControl>
-              <FormLabel htmlFor="nombre">Nombre:</FormLabel>
-              <Input
-                id="nombre"
-                name="nombre"
-                value={nuevoProducto.nombre}
-                onChange={handleInputChange}
-                placeholder="Nombre del producto"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="descripcion">Descripción:</FormLabel>
-              <Input
-                id="descripcion"
-                name="descripcion"
-                value={nuevoProducto.descripcion}
-                onChange={handleInputChange}
-                placeholder="Descripción del producto"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="codigo">Código:</FormLabel>
-              <Input
-                id="codigo"
-                name="codigo"
-                value={nuevoProducto.codigo}
-                onChange={handleInputChange}
-                placeholder="Código del producto"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="tipo">Tipo:</FormLabel>
-              <Select
-                id="tipo"
-                name="tipo"
-                value={nuevoProducto.tipo}
-                onChange={handleInputChange}
-                placeholder="Selecciona un tipo"
-              >
-                <option value="aseo">Aseo</option>
-                <option value="bebidas">Bebidas</option>
-                <option value="carnes">Carnes</option>
-                <option value="lacteos">Lácteos</option>
-                <option value="pastas">Pastas</option>
-                <option value="snacks">Snacks</option>
-                <option value="otros">Otros</option>
-              </Select>
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="precio">Precio:</FormLabel>
-              <Input
-                id="precio"
-                name="precio"
-                type="number"
-                value={nuevoProducto.precio}
-                onChange={handleInputChange}
-                placeholder="Precio del producto"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="imagen">Imagen:</FormLabel>
-              <Input
-                id="imagen"
-                name="imagen"
-                type="file"
-                accept="image/*"
-                onChange={handleInputChange}
-              />
-            </FormControl>
-            <Button leftIcon={<AddIcon />} colorScheme="brand" type="submit">
-              Agregar Producto
-            </Button>
-          </VStack>
-        </form>
-      </Box>
+      {user && user.rol === "admin" && (
+        <Box mb="8" p="6" borderWidth="1px" borderRadius="md">
+          <Heading as="h3" size="lg" mb="4">
+            Agregar Nuevo Producto
+          </Heading>
+          <form onSubmit={handleSubmit(handleCreateProduct)}>
+            <VStack spacing={4} align="stretch">
+              <FormControl>
+                <FormLabel>Nombre:</FormLabel>
+                <Input
+                  {...register("nombre")}
+                  placeholder="Nombre del producto"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Descripción:</FormLabel>
+                <Input
+                  {...register("descripcion")}
+                  placeholder="Descripción del producto"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Precio:</FormLabel>
+                <Input {...register("precio")} placeholder="Precio" />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Imagen:</FormLabel>
+                <Input type="file" {...register("imagen")} />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Categoría:</FormLabel>
+                <Select
+                  {...register("categoria")}
+                  placeholder="Selecciona una categoría"
+                >
+                  <option value="ropa">Ropa</option>
+                  <option value="accesorios">Accesorios</option>
+                  <option value="electronica">Electrónica</option>
+                </Select>
+              </FormControl>
+              <Button leftIcon={<AddIcon />} colorScheme="brand" type="submit">
+                Crear Producto
+              </Button>
+            </VStack>
+          </form>
+        </Box>
+      )}
 
-      {/* Lista de productos */}
-      <Grid templateColumns="repeat(auto-fit, minmax(250px, 1fr))" gap={6}>
-        {products.map((product) => (
-          <GridItem key={product.id} p="4" borderWidth="1px" borderRadius="md">
-            {product.imagen && (
-              <Image
-                src={product.imagen}
-                alt={product.nombre}
-                boxSize="100px"
-                objectFit="cover"
-                mb={2}
-              />
-            )}
-            <Text fontWeight="bold">{product.nombre}</Text>
-            <IconButton
-              icon={<DeleteIcon />}
-              colorScheme="red"
-              aria-label="Eliminar producto"
-              onClick={() => handleDelete(product.id)}
-              mt="4"
-              size="sm"
-            />
-          </GridItem>
-        ))}
-      </Grid>
+      <Box>
+        <Heading as="h3" size="lg" mb="4">
+          Lista de Productos
+        </Heading>
+        <Grid templateColumns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
+          {console.log("Productos antes de map:", products)}
+          {products.map((product) => (
+            <GridItem key={product.id}>
+              <Box borderWidth="1px" borderRadius="md" p="4">
+                <Image
+                  src={product.imagen}
+                  alt={product.nombre}
+                  objectFit="cover"
+                  width="100%"
+                  height="200px"
+                  mb="4"
+                />
+                <Text fontWeight="bold">{product.nombre}</Text>
+                <Text>{product.descripcion}</Text>
+                <Text>${product.precio}</Text>
+                <Text>{product.categoria}</Text>
+                {user && user.rol === "admin" && (
+                  <IconButton
+                    icon={<DeleteIcon />}
+                    colorScheme="red"
+                    aria-label="Eliminar producto"
+                    onClick={() => handleDelete(product.id)}
+                    mt="4"
+                  />
+                )}
+              </Box>
+            </GridItem>
+          ))}
+        </Grid>
+      </Box>
     </Box>
   );
 };
