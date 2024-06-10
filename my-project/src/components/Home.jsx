@@ -7,12 +7,6 @@ import {
   Grid,
   GridItem,
   useToast,
-  FormControl,
-  FormLabel,
-  Input,
-  VStack,
-  Select,
-  IconButton,
   Image,
   useColorModeValue,
   Spinner,
@@ -20,33 +14,24 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
+  Input,
+  IconButton,
 } from "@chakra-ui/react";
-import { AddIcon, DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
-import { useForm } from "react-hook-form";
-import axios from "axios";
+import { DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
 import useStore from "../store";
 import theme from "../theme";
 import { motion } from "framer-motion";
-import { useContext } from "react";
-import UIContext from "../context/UIContext";
+import ProductForm from "./ProductForm"; // Importa el componente ProductForm
 
 const MotionBox = motion(Box);
 const MotionGridItem = motion(GridItem);
 
 const Home = () => {
-  const {
-    user,
-    products,
-    isLoading,
-    fetchProducts,
-    deleteProduct,
-    navbarNeedsUpdate,
-  } = useStore();
-  const { register, handleSubmit, reset } = useForm();
+  const { user, products, isLoading, fetchProducts, deleteProduct } =
+    useStore();
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { updateNavbar } = useContext(UIContext);
 
   const bgColor = useColorModeValue(
     theme.colors.background.light,
@@ -56,21 +41,12 @@ const Home = () => {
     theme.colors.text.light,
     theme.colors.text.dark
   );
-  const buttonBg = useColorModeValue("brand.500", "brand.200");
-  const inputBg = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
     if (user?.token) {
       fetchProducts(currentPage, searchTerm);
     }
-  }, [user, fetchProducts, currentPage, searchTerm, products]);
-
-  useEffect(() => {
-    if (navbarNeedsUpdate) {
-      updateNavbar();
-      useStore.setState({ navbarNeedsUpdate: false });
-    }
-  }, [navbarNeedsUpdate, updateNavbar]);
+  }, [user, fetchProducts, currentPage, searchTerm]);
 
   const handleDelete = async (productId) => {
     try {
@@ -95,50 +71,18 @@ const Home = () => {
     }
   };
 
-  const handleCreateProduct = async (data) => {
-    const formData = new FormData();
-    for (const key in data) {
-      formData.append(key, data[key]);
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post("/productos/", formData, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      useStore.setState((state) => ({
-        products: {
-          ...state.products,
-          results: [...state.products.results, response.data],
-        },
-      }));
-      reset();
-      toast({
-        title: "Producto Creado",
-        description: "El producto se ha creado correctamente.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      fetchProducts(currentPage, searchTerm);
-    } catch (error) {
-      console.error("Error al crear producto:", error);
-      toast({
-        title: "Error",
-        description: "Hubo un error al crear el producto.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+  const handleSearchSubmit = () => {
     setCurrentPage(1);
+    fetchProducts(1, searchTerm);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    fetchProducts(newPage, searchTerm);
   };
 
   return (
@@ -153,25 +97,13 @@ const Home = () => {
       <Heading as="h1" size="xl" mb="8">
         Productos
       </Heading>
+
+      {/* Formulario para crear nuevo producto */}
       {(user?.rol === "administrador" || user?.rol === "vendedor") && (
-        <Box
-          mb="8"
-          p="6"
-          borderWidth="1px"
-          borderRadius="md"
-          bg={useColorModeValue("white", "gray.700")}
-          boxShadow="md"
-        >
-          <Heading as="h3" size="lg" mb="4">
-            Crear Nuevo Producto
-          </Heading>
-          <form onSubmit={handleSubmit(handleCreateProduct)}>
-            <VStack spacing={4} align="stretch">
-              {/* ... (campos del formulario para crear producto) ... */}
-            </VStack>
-          </form>
-        </Box>
+        <ProductForm />
       )}
+
+      {/* Buscador de productos */}
       <InputGroup mb={4}>
         <InputLeftElement pointerEvents="none">
           <SearchIcon color="gray.300" />
@@ -180,18 +112,26 @@ const Home = () => {
           type="text"
           placeholder="Buscar productos..."
           value={searchTerm}
-          onChange={handleSearch}
+          onChange={handleSearchChange}
         />
-        {searchTerm && (
-          <InputRightElement>
+        <InputRightElement>
+          <IconButton
+            icon={<SearchIcon />}
+            onClick={handleSearchSubmit}
+            size="sm"
+          />
+          {searchTerm && (
             <IconButton
               icon={<CloseIcon />}
               onClick={() => setSearchTerm("")}
               size="sm"
+              ml={2}
             />
-          </InputRightElement>
-        )}
+          )}
+        </InputRightElement>
       </InputGroup>
+
+      {/* Lista de productos */}
       <Box>
         {isLoading ? (
           <Spinner size="lg" />
@@ -204,39 +144,18 @@ const Home = () => {
               {products.results && products.results.length > 0 ? (
                 products.results.map((product) => (
                   <MotionGridItem key={product.id}>
-                    <Box
-                      borderWidth="1px"
-                      borderRadius="md"
-                      p="4"
-                      bg={useColorModeValue("white", "gray.700")}
-                      boxShadow="md"
-                    >
-                      <Image src={product.imagen} alt={product.nombre} mb={4} />
-                      <Text fontWeight="bold" mb={2}>
-                        {product.nombre}
-                      </Text>
-                      <Text mb={2}>{product.descripcion}</Text>
-                      <Text mb={2}>Precio: ${product.precio}</Text>
-                      <Text mb={2}>Categoría: {product.tipo}</Text>
-                      {user && (
-                        <IconButton
-                          icon={<DeleteIcon />}
-                          colorScheme="red"
-                          aria-label="Eliminar producto"
-                          onClick={() => handleDelete(product.id)}
-                          mt="4"
-                        />
-                      )}
-                    </Box>
+                    <ProductCard product={product} onDelete={handleDelete} />
                   </MotionGridItem>
                 ))
               ) : (
                 <Text>No se encontraron productos</Text>
               )}
             </Grid>
+
+            {/* Paginación */}
             <Flex justifyContent="center" mt={4}>
               <Button
-                onClick={() => setCurrentPage(currentPage - 1)}
+                onClick={() => handlePageChange(currentPage - 1)}
                 isDisabled={!products.previous}
                 mr={2}
               >
@@ -244,7 +163,7 @@ const Home = () => {
               </Button>
               <Text>Página {currentPage}</Text>
               <Button
-                onClick={() => setCurrentPage(currentPage + 1)}
+                onClick={() => handlePageChange(currentPage + 1)}
                 isDisabled={!products.next}
                 ml={2}
               >
@@ -255,6 +174,30 @@ const Home = () => {
         )}
       </Box>
     </MotionBox>
+  );
+};
+
+// Componente para mostrar la tarjeta de un producto
+const ProductCard = ({ product, onDelete }) => {
+  const bgColor = useColorModeValue("white", "gray.700");
+
+  return (
+    <Box borderWidth="1px" borderRadius="md" p="4" bg={bgColor} boxShadow="md">
+      <Image src={product.imagen} alt={product.nombre} mb={4} />
+      <Text fontWeight="bold" mb={2}>
+        {product.nombre}
+      </Text>
+      <Text mb={2}>{product.descripcion}</Text>
+      <Text mb={2}>Precio: ${product.precio}</Text>
+      <Text mb={2}>Categoría: {product.tipo}</Text>
+      <IconButton
+        icon={<DeleteIcon />}
+        colorScheme="red"
+        aria-label="Eliminar producto"
+        onClick={() => onDelete(product.id)}
+        mt="4"
+      />
+    </Box>
   );
 };
 
