@@ -1,79 +1,110 @@
+// store.js
 import { create } from "zustand";
 import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
 
 axios.defaults.baseURL = API_BASE_URL;
 
-const useStore = create((set) => ({
+const useStore = create((set, get) => ({
   user: null,
   isLoggedIn: false,
-  isLoading: false, // Nuevo estado para la carga
+  isLoading: false,
   products: [],
   users: [],
+  navbarNeedsUpdate: false,
+
+  initializeStore: async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      set({ isLoggedIn: true, isLoading: true });
+      axios.defaults.headers.common["Authorization"] = `Token ${token}`;
+      try {
+        const [userResponse, productsResponse, usersResponse] =
+          await Promise.all([
+            axios.get("/usuarios/me/"),
+            axios.get("/productos/"),
+            axios.get("/usuarios/"),
+          ]);
+
+        set({
+          user: userResponse.data,
+          products: productsResponse.data,
+          users: usersResponse.data,
+          isLoading: false,
+        });
+      } catch (error) {
+        console.error("Error loading data:", error);
+        set({ isLoggedIn: false, isLoading: false });
+      }
+    }
+  },
 
   login: async (username, password, toast) => {
-    console.log("Datos de inicio de sesión:", { username, password });
-    set({ isLoading: true }); // Iniciar la carga
-
+    set({ isLoading: true });
     try {
       const response = await axios.post("/api-token-auth/", {
         username,
         password,
       });
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      axios.defaults.headers.common["Authorization"] = `Token ${token}`;
 
-      console.log("Respuesta del backend:", response);
+      const [userResponse, productsResponse, usersResponse] = await Promise.all(
+        [
+          axios.get("/usuarios/me/"),
+          axios.get("/productos/"),
+          axios.get("/usuarios/"),
+        ]
+      );
 
-      localStorage.setItem("token", response.data.token);
-      set({ user: response.data, isLoggedIn: true, isLoading: false }); // Actualizar el estado
+      set({
+        user: userResponse.data,
+        products: productsResponse.data,
+        users: usersResponse.data,
+        isLoggedIn: true,
+        isLoading: false,
+        navbarNeedsUpdate: true,
+      });
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
-      set({ isLoading: false }); // Detener la carga en caso de error
-
-      if (error.response) {
-        console.error("Datos de la respuesta de error:", error.response.data);
-        toast({
-          title: "Error de inicio de sesión",
-          description:
-            error.response.data.detail || "Credenciales incorrectas.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else if (error.request) {
-        console.error("La solicitud no recibió respuesta:", error.request);
-        toast({
-          title: "Error de inicio de sesión",
-          description: "No se pudo conectar con el servidor.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else {
-        console.error("Error al configurar la solicitud:", error.message);
-        toast({
-          title: "Error de inicio de sesión",
-          description: "Hubo un error al procesar la solicitud.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+      set({ isLoading: false });
+      toast({
+        title: "Error de inicio de sesión",
+        description:
+          error.response?.data?.detail || "Credenciales incorrectas.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   },
+
   logout: () => {
     localStorage.removeItem("token");
-    set({ user: null, isLoggedIn: false });
+    delete axios.defaults.headers.common["Authorization"];
+    set({
+      user: null,
+      isLoggedIn: false,
+      products: [],
+      users: [],
+      navbarNeedsUpdate: true,
+    });
   },
-  fetchProducts: async () => {
+
+  fetchProducts: async (page = 1, search = "") => {
     set({ isLoading: true });
     try {
       const token = localStorage.getItem("token");
+      const params = { page, search };
       const response = await axios.get("/productos/", {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+        headers: { Authorization: `Token ${token}` },
+        params,
       });
-      set({ products: response.data, isLoading: false });
+      set({
+        products: response.data, // Guarda la respuesta completa, incluyendo la paginación
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Error al obtener productos:", error);
       set({ isLoading: false });
@@ -90,6 +121,26 @@ const useStore = create((set) => ({
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
       set({ isLoading: false });
+    }
+  },
+
+  deleteProduct: async (productId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`/productos/${productId}/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      set((state) => ({
+        products: {
+          ...state.products, // Mantén las otras propiedades del objeto products
+          results: state.products.results.filter(
+            (product) => product.id !== productId
+          ),
+        },
+      }));
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      throw error;
     }
   },
 }));

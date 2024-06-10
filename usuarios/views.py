@@ -5,12 +5,12 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from .models import Usuario
 from .serializers import UsuarioSerializer, UsuarioCreateSerializer
-from .permissions import IsAdminUser
+from .permissions import IsAdminUser, IsAdminOrCreateUser
 
 
 class UsuarioListCreateView(generics.ListCreateAPIView):
     queryset = Usuario.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCreateUser]
 
     def get_serializer_class(self):
         if self.request.method == "POST":

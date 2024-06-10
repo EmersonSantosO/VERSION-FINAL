@@ -11,6 +11,7 @@ import {
   Heading,
   useColorModeValue,
   useToast,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -21,10 +22,12 @@ import theme from "../theme";
 const MotionBox = motion(Box);
 
 const ProductForm = () => {
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, formState } = useForm();
+  const { errors } = formState;
   const [image, setImage] = useState(null);
-  const user = useStore((state) => state.user); // Accede al usuario desde el store
+
   const navigate = useNavigate();
+  const fetchProducts = useStore((state) => state.fetchProducts);
   const toast = useToast();
 
   const bgColor = useColorModeValue(
@@ -38,20 +41,20 @@ const ProductForm = () => {
   const buttonBg = useColorModeValue("brand.500", "brand.200");
   const inputBg = useColorModeValue("gray.100", "gray.700");
 
-  const onSubmit = async (data) => {
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  const createProduct = async (data) => {
     const formData = new FormData();
-    formData.append("nombre", data.nombre);
-    formData.append("descripcion", data.descripcion);
-    formData.append("codigo", data.codigo);
-    formData.append("tipo", data.tipo);
-    formData.append("precio", data.precio);
-    if (image) {
-      formData.append("imagen", image);
+    for (const key in data) {
+      formData.append(key, data[key]);
     }
+    formData.append("imagen", image);
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post("/productos/", formData, {
+      await axios.post("/productos/", formData, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "multipart/form-data",
@@ -66,8 +69,9 @@ const ProductForm = () => {
         isClosable: true,
       });
 
-      reset();
+      fetchProducts();
       navigate("/");
+      reset();
     } catch (error) {
       console.error("Error al crear el producto:", error);
       toast({
@@ -80,28 +84,6 @@ const ProductForm = () => {
     }
   };
 
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  // Verifica los roles del usuario desde el store
-  if (!user || (user.rol !== "administrador" && user.rol !== "vendedor")) {
-    return (
-      <MotionBox
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        p="8"
-        bg={bgColor}
-        color={textColor}
-      >
-        <Heading as="h2" size="lg" mb="4">
-          No tienes permisos para acceder a esta página.
-        </Heading>
-      </MotionBox>
-    );
-  }
-
   return (
     <MotionBox
       initial={{ opacity: 0 }}
@@ -110,16 +92,88 @@ const ProductForm = () => {
       p="8"
       bg={bgColor}
       color={textColor}
-      borderWidth="1px"
-      borderRadius="md"
-      boxShadow="md"
     >
       <Heading as="h1" size="xl" mb="8">
         Crear Producto
       </Heading>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(createProduct)}>
         <VStack spacing={4} align="stretch">
-          {/* ... (campos del formulario) */}
+          <InputComponent
+            inputBg={inputBg}
+            textColor={textColor}
+            label="Nombre"
+            id="nombre"
+            placeholder="Nombre del producto"
+            error={errors.nombre}
+            register={register("nombre", {
+              required: "Este campo es requerido",
+            })}
+          />
+          <InputComponent
+            inputBg={inputBg}
+            label="Descripción"
+            id="descripcion"
+            placeholder="Descripción del producto"
+            error={errors.descripcion}
+            register={register("descripcion")}
+          />
+          <InputComponent
+            inputBg={inputBg}
+            label="Código"
+            id="codigo"
+            placeholder="Código del producto"
+            error={errors.codigo}
+            register={register("codigo", {
+              required: "Este campo es requerido",
+            })}
+          />
+          <SelectComponent
+            inputBg={inputBg}
+            textColor={textColor}
+            label="Tipo"
+            id="tipo"
+            placeholder="Selecciona un tipo"
+            error={errors.tipo}
+            register={register("tipo", { required: "Este campo es requerido" })}
+          />
+          <InputComponent
+            inputBg={inputBg}
+            label="Precio"
+            id="precio"
+            placeholder="Precio del producto"
+            type="number"
+            error={errors.precio}
+            register={register("precio", {
+              required: "Este campo es requerido",
+              min: {
+                value: 0,
+                message: "El precio debe ser mayor o igual a 0",
+              },
+            })}
+          />
+          <InputComponent
+            label="Precio"
+            id="precio"
+            placeholder="Precio del producto"
+            type="number"
+            error={errors.precio}
+            register={register("precio", {
+              required: "Este campo es requerido",
+              min: {
+                value: 0,
+                message: "El precio debe ser mayor o igual a 0",
+              },
+            })}
+          />
+          <FormControl>
+            <FormLabel htmlFor="imagen">Imagen:</FormLabel>
+            <Input
+              id="imagen"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </FormControl>
           <Button
             colorScheme="blue"
             type="submit"
@@ -133,5 +187,61 @@ const ProductForm = () => {
     </MotionBox>
   );
 };
+
+// Componente reusable para inputs
+const InputComponent = ({
+  label,
+  id,
+  placeholder,
+  error,
+  register,
+  inputBg,
+  textColor,
+  ...rest
+}) => (
+  <FormControl isInvalid={error}>
+    <FormLabel htmlFor={id}>{label}:</FormLabel>
+    <Input
+      id={id}
+      placeholder={placeholder}
+      bg={inputBg}
+      color={textColor}
+      {...register}
+      {...rest}
+    />
+    <FormErrorMessage>{error && error.message}</FormErrorMessage>
+  </FormControl>
+);
+
+// Componente reusable para selects
+const SelectComponent = ({
+  label,
+  id,
+  placeholder,
+  error,
+  register,
+  inputBg,
+  textColor,
+}) => (
+  <FormControl isInvalid={error}>
+    <FormLabel htmlFor={id}>{label}:</FormLabel>
+    <Select
+      id={id}
+      placeholder={placeholder}
+      bg={inputBg}
+      color={textColor}
+      {...register}
+    >
+      <option value="aseo">Aseo</option>
+      <option value="bebidas">Bebidas</option>
+      <option value="carnes">Carnes</option>
+      <option value="lacteos">Lacteos</option>
+      <option value="pastas">Pastas</option>
+      <option value="snacks">Snacks</option>
+      <option value="otros">Otros</option>
+    </Select>
+    <FormErrorMessage>{error && error.message}</FormErrorMessage>
+  </FormControl>
+);
 
 export default ProductForm;

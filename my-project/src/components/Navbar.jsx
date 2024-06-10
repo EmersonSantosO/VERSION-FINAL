@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -9,7 +9,8 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
-import useStore from "../store"; // Importa el store
+import useStore from "../store";
+import UIContext from "../context/UIContext";
 
 const Navbar = () => {
   const user = useStore((state) => state.user);
@@ -17,6 +18,9 @@ const Navbar = () => {
   const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
+  const { isNavbarUpdated } = useContext(UIContext); // Accede al contexto
+  const { updateNavbar } = useContext(UIContext);
+  const navbarNeedsUpdate = useStore((state) => state.navbarNeedsUpdate);
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -28,8 +32,12 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    console.log("Navbar actualizado, isLoggedIn:", isLoggedIn, user);
-  }, [isLoggedIn, user]); // Dependencias actualizadas
+    if (navbarNeedsUpdate) {
+      updateNavbar();
+      // Restablecer el estado para evitar actualizaciones innecesarias
+      useStore.setState({ navbarNeedsUpdate: false });
+    }
+  }, [navbarNeedsUpdate, updateNavbar]);
 
   return (
     <Flex
@@ -44,7 +52,7 @@ const Navbar = () => {
         <Link to="/">Bazar App</Link>
       </Box>
       <Spacer />
-      {user ? (
+      {user && isLoggedIn && (
         <Box>
           {user.rol === "administrador" && (
             <>
@@ -56,13 +64,11 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          {user &&
-            isLoggedIn &&
-            (user.rol === "administrador" || user.rol === "vendedor") && (
-              <Box mx="2">
-                <Link to="/productos/nuevo">Crear Producto</Link>
-              </Box>
-            )}
+          {(user.rol === "administrador" || user.rol === "vendedor") && (
+            <Link to="/productos/nuevo" mx="2">
+              Crear Producto
+            </Link>
+          )}
           <Button
             onClick={handleLogout}
             colorScheme="blue"
@@ -75,7 +81,8 @@ const Navbar = () => {
             Cerrar sesión
           </Button>
         </Box>
-      ) : (
+      )}
+      {!user && !isLoggedIn && (
         <Box>
           <Link to="/login">
             <Button

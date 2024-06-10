@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -13,9 +13,10 @@ import Login from "./components/Login";
 import ProductForm from "./components/ProductForm";
 import UserManagement from "./components/UserManagement";
 import useStore from "./store";
+import { UIProvider } from "./context/UIContext";
 
 const ProtectedRoute = ({ children, roles }) => {
-  const { user } = React.useContext(AuthContext);
+  const user = useStore((state) => state.user);
 
   if (!user || (roles && !roles.includes(user.rol))) {
     return <Navigate to="/login" />;
@@ -25,11 +26,20 @@ const ProtectedRoute = ({ children, roles }) => {
 };
 
 function App() {
+  const initializeStore = useStore((state) => state.initializeStore);
+
+  useEffect(() => {
+    initializeStore();
+  }, []);
+
   return (
     <ChakraProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <UIProvider>
+        <Router>
+          <Navbar />
+          <AppContent />
+        </Router>
+      </UIProvider>
     </ChakraProvider>
   );
 }
@@ -39,7 +49,6 @@ function AppContent() {
 
   return (
     <>
-      <Navbar key={isLoggedIn ? "logged-in" : "logged-out"} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

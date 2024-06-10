@@ -1,13 +1,12 @@
-// src/components/AuthNavigation.jsx
-import React, { useContext } from "react";
+import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import useStore from "../store";
 import Login from "./Login";
 import Home from "./Home";
 import Admin from "./Admin";
 
 const AuthNavigation = () => {
-  const { user } = useContext(AuthContext);
+  const user = useStore((state) => state.user);
 
   return (
     <Routes>

@@ -9,6 +9,7 @@ djangorestframework = "*"
 django-cors-headers = "*"
 pillow = "*"
 drf-spectacular = "*"
+django-filter = "*"
 
 [dev-packages]
 

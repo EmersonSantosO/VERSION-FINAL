@@ -16,8 +16,13 @@ class IsAdminUser(permissions.BasePermission):
 
 class IsAdminOrVendedor(permissions.BasePermission):
     def has_permission(self, request, view):
-        # Permitir acceso de solo lectura a todos
         if request.method in permissions.SAFE_METHODS:
             return True
-        # Permitir acceso completo a administradores y vendedores
+        return request.user and request.user.rol in ["administrador", "vendedor"]
+
+
+class IsAdminOrCreateUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "POST":
+            return request.user and request.user.rol == "administrador"
         return request.user and request.user.rol in ["administrador", "vendedor"]

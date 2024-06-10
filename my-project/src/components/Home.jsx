@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,22 +16,37 @@ import {
   Image,
   useColorModeValue,
   Spinner,
+  Flex,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
 } from "@chakra-ui/react";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { AddIcon, DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import useStore from "../store";
 import theme from "../theme";
 import { motion } from "framer-motion";
+import { useContext } from "react";
+import UIContext from "../context/UIContext";
 
 const MotionBox = motion(Box);
 const MotionGridItem = motion(GridItem);
 
 const Home = () => {
-  const { user, products, isLoading, fetchProducts, deleteProduct } =
-    useStore();
+  const {
+    user,
+    products,
+    isLoading,
+    fetchProducts,
+    deleteProduct,
+    navbarNeedsUpdate,
+  } = useStore();
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const { updateNavbar } = useContext(UIContext);
 
   const bgColor = useColorModeValue(
     theme.colors.background.light,
@@ -46,13 +61,20 @@ const Home = () => {
 
   useEffect(() => {
     if (user?.token) {
-      fetchProducts();
+      fetchProducts(currentPage, searchTerm);
     }
-  }, [user, fetchProducts]);
+  }, [user, fetchProducts, currentPage, searchTerm, products]);
+
+  useEffect(() => {
+    if (navbarNeedsUpdate) {
+      updateNavbar();
+      useStore.setState({ navbarNeedsUpdate: false });
+    }
+  }, [navbarNeedsUpdate, updateNavbar]);
 
   const handleDelete = async (productId) => {
     try {
-      await deleteProduct(productId); // Llama a la función deleteProduct del store
+      await deleteProduct(productId);
       toast({
         title: "Producto Eliminado",
         description: "El producto se ha eliminado correctamente.",
@@ -60,6 +82,7 @@ const Home = () => {
         duration: 3000,
         isClosable: true,
       });
+      fetchProducts(currentPage, searchTerm);
     } catch (error) {
       console.error("Error al eliminar producto:", error);
       toast({
@@ -86,9 +109,11 @@ const Home = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      // Actualiza el store directamente con el nuevo producto
       useStore.setState((state) => ({
-        products: [...state.products, response.data],
+        products: {
+          ...state.products,
+          results: [...state.products.results, response.data],
+        },
       }));
       reset();
       toast({
@@ -98,6 +123,7 @@ const Home = () => {
         duration: 3000,
         isClosable: true,
       });
+      fetchProducts(currentPage, searchTerm);
     } catch (error) {
       console.error("Error al crear producto:", error);
       toast({
@@ -110,6 +136,11 @@ const Home = () => {
     }
   };
 
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
   return (
     <MotionBox
       initial={{ opacity: 0 }}
@@ -120,90 +151,107 @@ const Home = () => {
       color={textColor}
     >
       <Heading as="h1" size="xl" mb="8">
-        Bienvenido al Sistema de Bazar
+        Productos
       </Heading>
-
-      {/* Formulario para crear nuevo producto (solo para administradores) */}
-      {user?.rol === "administrador" && (
-        <MotionBox
+      {(user?.rol === "administrador" || user?.rol === "vendedor") && (
+        <Box
           mb="8"
           p="6"
           borderWidth="1px"
           borderRadius="md"
           bg={useColorModeValue("white", "gray.700")}
           boxShadow="md"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <Heading as="h3" size="lg" mb="4">
-            Agregar Nuevo Producto
+            Crear Nuevo Producto
           </Heading>
           <form onSubmit={handleSubmit(handleCreateProduct)}>
             <VStack spacing={4} align="stretch">
-              {/* ... (campos del formulario) ... */}
-              <Button
-                leftIcon={<AddIcon />}
-                colorScheme="brand"
-                type="submit"
-                bg={buttonBg}
-                _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
-              >
-                Crear Producto
-              </Button>
+              {/* ... (campos del formulario para crear producto) ... */}
             </VStack>
           </form>
-        </MotionBox>
+        </Box>
       )}
-
-      {/* Lista de productos */}
+      <InputGroup mb={4}>
+        <InputLeftElement pointerEvents="none">
+          <SearchIcon color="gray.300" />
+        </InputLeftElement>
+        <Input
+          type="text"
+          placeholder="Buscar productos..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+        {searchTerm && (
+          <InputRightElement>
+            <IconButton
+              icon={<CloseIcon />}
+              onClick={() => setSearchTerm("")}
+              size="sm"
+            />
+          </InputRightElement>
+        )}
+      </InputGroup>
       <Box>
-        <Heading as="h3" size="lg" mb="4">
-          Lista de Productos
-        </Heading>
         {isLoading ? (
           <Spinner size="lg" />
         ) : (
-          <Grid templateColumns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
-            {products.map((product) => (
-              <MotionGridItem
-                key={product.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+          <>
+            <Grid
+              templateColumns="repeat(auto-fit, minmax(240px, 1fr))"
+              gap={6}
+            >
+              {products.results && products.results.length > 0 ? (
+                products.results.map((product) => (
+                  <MotionGridItem key={product.id}>
+                    <Box
+                      borderWidth="1px"
+                      borderRadius="md"
+                      p="4"
+                      bg={useColorModeValue("white", "gray.700")}
+                      boxShadow="md"
+                    >
+                      <Image src={product.imagen} alt={product.nombre} mb={4} />
+                      <Text fontWeight="bold" mb={2}>
+                        {product.nombre}
+                      </Text>
+                      <Text mb={2}>{product.descripcion}</Text>
+                      <Text mb={2}>Precio: ${product.precio}</Text>
+                      <Text mb={2}>Categoría: {product.tipo}</Text>
+                      {user && (
+                        <IconButton
+                          icon={<DeleteIcon />}
+                          colorScheme="red"
+                          aria-label="Eliminar producto"
+                          onClick={() => handleDelete(product.id)}
+                          mt="4"
+                        />
+                      )}
+                    </Box>
+                  </MotionGridItem>
+                ))
+              ) : (
+                <Text>No se encontraron productos</Text>
+              )}
+            </Grid>
+            <Flex justifyContent="center" mt={4}>
+              <Button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                isDisabled={!products.previous}
+                mr={2}
               >
-                <Box
-                  borderWidth="1px"
-                  borderRadius="md"
-                  p="4"
-                  bg={useColorModeValue("white", "gray.700")}
-                  boxShadow="md"
-                >
-                  <Image
-                    src={product.imagen}
-                    alt={product.nombre}
-                    objectFit="cover"
-                    width="100%"
-                    height="200px"
-                    mb="4"
-                  />
-                  <Text fontWeight="bold">{product.nombre}</Text>
-                  <Text>{product.descripcion}</Text>
-                  <Text>${product.precio}</Text>
-                  <Text>{product.categoria}</Text>
-                  {user?.rol === "administrador" && (
-                    <IconButton
-                      icon={<DeleteIcon />}
-                      colorScheme="red"
-                      aria-label="Eliminar producto"
-                      onClick={() => handleDelete(product.id)}
-                      mt="4"
-                    />
-                  )}
-                </Box>
-              </MotionGridItem>
-            ))}
-          </Grid>
+                Anterior
+              </Button>
+              <Text>Página {currentPage}</Text>
+              <Button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                isDisabled={!products.next}
+                ml={2}
+              >
+                Siguiente
+              </Button>
+            </Flex>
+          </>
         )}
       </Box>
     </MotionBox>
