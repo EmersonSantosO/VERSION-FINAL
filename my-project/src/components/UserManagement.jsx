@@ -19,7 +19,7 @@ import useStore from "../store";
 import theme from "../theme";
 
 const UserManagement = () => {
-  const { users, setUsers, isLoading } = useStore();
+  const { users, fetchUsers, isLoading } = useStore();
   const user = useStore((state) => state.user);
   const toast = useToast();
 
@@ -34,29 +34,10 @@ const UserManagement = () => {
   const tableColor = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("/api/usuarios/", {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error al obtener usuarios:", error);
-        toast({
-          title: "Error",
-          description: "Hubo un error al obtener la lista de usuarios.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    };
-
     if (user?.token) {
       fetchUsers();
     }
-  }, [user, toast, setUsers]);
+  }, [user, fetchUsers]);
 
   const handleDelete = async (userId) => {
     try {
@@ -64,7 +45,7 @@ const UserManagement = () => {
       await axios.delete(`/api/usuarios/${userId}/`, {
         headers: { Authorization: `Token ${token}` },
       });
-      setUsers(users.filter((u) => u.id !== userId));
+      fetchUsers(); // Actualiza la lista después de eliminar
       toast({
         title: "Usuario Eliminado",
         description: "El usuario se ha eliminado correctamente.",
@@ -84,6 +65,7 @@ const UserManagement = () => {
     }
   };
 
+  // Mostrar mensaje si el usuario no es administrador
   if (user?.rol !== "administrador") {
     return (
       <Box p="8" bg={bgColor} color={textColor}>
@@ -115,23 +97,7 @@ const UserManagement = () => {
           </Thead>
           <Tbody>
             {users.map((user) => (
-              <Tr key={user.id}>
-                <Td>{user.id}</Td>
-                <Td>{user.email}</Td>
-                <Td>{user.nombre}</Td>
-                <Td>{user.apellido}</Td>
-                <Td>{user.rol}</Td>
-                <Td>
-                  <Button
-                    leftIcon={<DeleteIcon />}
-                    colorScheme="red"
-                    variant="solid"
-                    onClick={() => handleDelete(user.id)}
-                  >
-                    Eliminar
-                  </Button>
-                </Td>
-              </Tr>
+              <UserRow key={user.id} user={user} onDelete={handleDelete} />
             ))}
           </Tbody>
         </Table>
@@ -139,5 +105,26 @@ const UserManagement = () => {
     </Box>
   );
 };
+
+// Componente para una fila de usuario
+const UserRow = ({ user, onDelete }) => (
+  <Tr>
+    <Td>{user.id}</Td>
+    <Td>{user.email}</Td>
+    <Td>{user.nombre}</Td>
+    <Td>{user.apellido}</Td>
+    <Td>{user.rol}</Td>
+    <Td>
+      <Button
+        leftIcon={<DeleteIcon />}
+        colorScheme="red"
+        variant="solid"
+        onClick={() => onDelete(user.id)}
+      >
+        Eliminar
+      </Button>
+    </Td>
+  </Tr>
+);
 
 export default UserManagement;

@@ -13,15 +13,13 @@ import Login from "./components/Login";
 import ProductForm from "./components/ProductForm";
 import UserManagement from "./components/UserManagement";
 import useStore from "./store";
-import { UIProvider } from "./context/UIContext";
 
+// Componente para rutas protegidas
 const ProtectedRoute = ({ children, roles }) => {
   const user = useStore((state) => state.user);
-
   if (!user || (roles && !roles.includes(user.rol))) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />; // Usar 'replace' para evitar duplicados en el historial
   }
-
   return children;
 };
 
@@ -34,50 +32,38 @@ function App() {
 
   return (
     <ChakraProvider>
-      <UIProvider>
-        <Router>
-          <Navbar />
-          <AppContent />
-        </Router>
-      </UIProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={["administrador"]}>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/productos/nuevo"
+            element={
+              <ProtectedRoute roles={["administrador", "vendedor"]}>
+                <ProductForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/usuarios"
+            element={
+              <ProtectedRoute roles={["administrador"]}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
     </ChakraProvider>
-  );
-}
-
-function AppContent() {
-  const isLoggedIn = useStore((state) => state.isLoggedIn);
-
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute roles={["administrador"]}>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/productos/nuevo"
-          element={
-            <ProtectedRoute roles={["administrador", "vendedor"]}>
-              <ProductForm />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/usuarios"
-          element={
-            <ProtectedRoute roles={["administrador"]}>
-              <UserManagement />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </>
   );
 }
 

@@ -42,14 +42,28 @@ const useStore = create((set, get) => ({
   login: async (username, password, toast) => {
     set({ isLoading: true });
     try {
-      const response = await axios.post("/api-token-auth/", {
-        username,
-        password,
-      });
+      console.log("Nombre de usuario:", username);
+      console.log("Contraseña:", password);
+      const response = await axios.post(
+        "/api-token-auth/",
+        {
+          username,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
       const token = response.data.token;
       localStorage.setItem("token", token);
+
+      // Configura el token en los headers de Axios
       axios.defaults.headers.common["Authorization"] = `Token ${token}`;
 
+      // Ahora puedes hacer las otras peticiones
       const [userResponse, productsResponse, usersResponse] = await Promise.all(
         [
           axios.get("/usuarios/me/"),

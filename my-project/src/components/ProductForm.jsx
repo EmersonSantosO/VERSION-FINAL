@@ -151,20 +151,7 @@ const ProductForm = () => {
               },
             })}
           />
-          <InputComponent
-            label="Precio"
-            id="precio"
-            placeholder="Precio del producto"
-            type="number"
-            error={errors.precio}
-            register={register("precio", {
-              required: "Este campo es requerido",
-              min: {
-                value: 0,
-                message: "El precio debe ser mayor o igual a 0",
-              },
-            })}
-          />
+
           <FormControl>
             <FormLabel htmlFor="imagen">Imagen:</FormLabel>
             <Input

@@ -139,3 +139,12 @@ MEDIA_ROOT = os.path.join(
     BASE_DIR, "media"
 )  # Carpeta donde se guardarán las imágenes subidas
 MEDIA_URL = "/media/"
+
+# ... otras configuraciones ...
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # Backend por defecto de Django
+    "usuarios.models.UsuarioManager",  # Tu administrador de usuarios personalizado
+]
+
+# ... otras configuraciones ...

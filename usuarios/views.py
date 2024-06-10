@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from .models import Usuario
 from .serializers import UsuarioSerializer, UsuarioCreateSerializer
 from .permissions import IsAdminUser, IsAdminOrCreateUser
+from django.contrib.auth.hashers import check_password
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 
 
 class UsuarioListCreateView(generics.ListCreateAPIView):
@@ -28,12 +30,19 @@ class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CustomAuthToken(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer  # Configura el serializador
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
+
+        # Verifica la contraseña
+        if not check_password(request.data["password"], user.password):
+            return Response({"error": "Credenciales incorrectas"}, status=400)
+
         token, created = Token.objects.get_or_create(user=user)
         return Response(
             {

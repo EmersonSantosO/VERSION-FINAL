@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Usuario
+from rest_framework.authtoken.models import Token
 
 
 @admin.register(Usuario)
@@ -19,16 +20,7 @@ class UsuarioAdmin(admin.ModelAdmin):
         ),
         (
             "Permisos",
-            {
-                "fields": (
-                    "is_staff",
-                    "is_superuser",
-                    "is_active",
-                    "groups",
-                    "user_permissions",
-                    "rol",
-                )
-            },
+            {"fields": ("rol",)},
         ),
     )
     # Campos que se deben rellenar al crear un usuario
@@ -51,3 +43,8 @@ class UsuarioAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:  # Solo crea un token si es un nuevo usuario
+            Token.objects.create(user=obj)

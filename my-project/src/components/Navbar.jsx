@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,6 +7,7 @@ import {
   Spacer,
   useColorModeValue,
   useColorMode,
+  Icon,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import useStore from "../store";
@@ -16,6 +17,7 @@ const Navbar = () => {
   const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
+  const location = useLocation(); // Obtiene la ubicación actual
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -35,9 +37,11 @@ const Navbar = () => {
       alignItems="center"
       boxShadow="md"
     >
-      <Box fontWeight="bold">
-        <Link to="/">Bazar App</Link>
-      </Box>
+      <Flex alignItems="center">
+        <Box fontWeight="bold">
+          <Link to="/">Aplicación Bazar</Link>
+        </Box>
+      </Flex>
       <Spacer />
 
       {/* Menú para usuarios autenticados */}
@@ -78,7 +82,7 @@ const Navbar = () => {
       )}
 
       {/* Botón de iniciar sesión para usuarios no autenticados */}
-      {!user && (
+      {!user && location.pathname !== "/login" && (
         <Box>
           <Link to="/login">
             <Button
