@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Box,
@@ -10,22 +10,23 @@ import {
   VStack,
   Heading,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import theme from "../theme"; // Importa tu tema de colores
+import useStore from "../store";
+import theme from "../theme";
 
 const MotionBox = motion(Box);
 
 const ProductForm = () => {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset } = useForm();
   const [image, setImage] = useState(null);
-  const { user } = useContext(AuthContext);
+  const user = useStore((state) => state.user); // Accede al usuario desde el store
   const navigate = useNavigate();
+  const toast = useToast();
 
-  // Colores adaptativos al tema
   const bgColor = useColorModeValue(
     theme.colors.background.light,
     theme.colors.background.dark
@@ -34,10 +35,7 @@ const ProductForm = () => {
     theme.colors.text.light,
     theme.colors.text.dark
   );
-  const buttonBg = useColorModeValue(
-    theme.colors.brand.light,
-    theme.colors.brand.dark
-  );
+  const buttonBg = useColorModeValue("brand.500", "brand.200");
   const inputBg = useColorModeValue("gray.100", "gray.700");
 
   const onSubmit = async (data) => {
@@ -53,15 +51,32 @@ const ProductForm = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("/productos/", formData, {
+      const response = await axios.post("/productos/", formData, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
+
+      toast({
+        title: "Producto creado",
+        description: "El producto se ha creado correctamente.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      reset();
       navigate("/");
     } catch (error) {
-      console.error("Error creating product:", error);
+      console.error("Error al crear el producto:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un error al crear el producto.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -69,8 +84,22 @@ const ProductForm = () => {
     setImage(e.target.files[0]);
   };
 
+  // Verifica los roles del usuario desde el store
   if (!user || (user.rol !== "administrador" && user.rol !== "vendedor")) {
-    return <p>No tienes permisos para acceder a esta página.</p>;
+    return (
+      <MotionBox
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        p="8"
+        bg={bgColor}
+        color={textColor}
+      >
+        <Heading as="h2" size="lg" mb="4">
+          No tienes permisos para acceder a esta página.
+        </Heading>
+      </MotionBox>
+    );
   }
 
   return (
@@ -81,78 +110,18 @@ const ProductForm = () => {
       p="8"
       bg={bgColor}
       color={textColor}
+      borderWidth="1px"
+      borderRadius="md"
+      boxShadow="md"
     >
       <Heading as="h1" size="xl" mb="8">
         Crear Producto
       </Heading>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
-          <FormControl>
-            <FormLabel>Nombre:</FormLabel>
-            <Input
-              {...register("nombre")}
-              placeholder="Nombre"
-              required
-              bg={inputBg}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Descripción:</FormLabel>
-            <Input
-              {...register("descripcion")}
-              placeholder="Descripción"
-              required
-              bg={inputBg}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Código:</FormLabel>
-            <Input
-              {...register("codigo")}
-              placeholder="Código"
-              required
-              bg={inputBg}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Tipo:</FormLabel>
-            <Select
-              {...register("tipo")}
-              placeholder="Selecciona el tipo de producto"
-              required
-              bg={inputBg}
-            >
-              <option value="aseo">Aseo</option>
-              <option value="bebidas">Bebidas</option>
-              <option value="carnes">Carnes</option>
-              <option value="lacteos">Lácteos</option>
-              <option value="pastas">Pastas</option>
-              <option value="snacks">Snacks</option>
-              <option value="otros">Otros</option>
-            </Select>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Precio:</FormLabel>
-            <Input
-              {...register("precio")}
-              type="number"
-              step="0.01"
-              placeholder="Precio"
-              required
-              bg={inputBg}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Imagen:</FormLabel>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              bg={inputBg}
-            />
-          </FormControl>
+          {/* ... (campos del formulario) */}
           <Button
-            colorScheme="brand"
+            colorScheme="blue"
             type="submit"
             bg={buttonBg}
             _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}

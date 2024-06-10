@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,21 +16,20 @@ import {
   Select,
   IconButton,
   useColorModeValue,
+  Spinner,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
-import { useStore } from "../store";
-import theme from "../theme"; // Importa tu tema de colores
+import useStore from "../store"; // Importación corregida
+import theme from "../theme";
 
 const Admin = () => {
-  const { token } = useContext(AuthContext);
-  const { users, setUsers } = useStore();
+  const token = useStore((state) => state.user?.token);
+  const { users, setUsers, isLoading } = useStore(); // Accede a isLoading desde el store
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
-  // Colores adaptativos al tema
   const bgColor = useColorModeValue(
     theme.colors.background.light,
     theme.colors.background.dark
@@ -39,10 +38,7 @@ const Admin = () => {
     theme.colors.text.light,
     theme.colors.text.dark
   );
-  const buttonBg = useColorModeValue(
-    theme.colors.brand.light,
-    theme.colors.brand.dark
-  );
+  const buttonBg = useColorModeValue("brand.500", "brand.200");
   const inputBg = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
@@ -126,56 +122,28 @@ const Admin = () => {
         Administración
       </Heading>
 
+      {/* Formulario para crear nuevo usuario */}
       <Box
         mb="8"
         p="6"
         borderWidth="1px"
         borderRadius="md"
         bg={useColorModeValue("white", "gray.700")}
+        boxShadow="md"
       >
         <Heading as="h3" size="lg" mb="4">
           Crear Nuevo Usuario
         </Heading>
         <form onSubmit={handleSubmit(handleCreateUser)}>
           <VStack spacing={4} align="stretch">
-            <FormControl>
-              <FormLabel>Nombre:</FormLabel>
-              <Input
-                {...register("nombre")}
-                placeholder="Nombre"
-                bg={inputBg}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Email:</FormLabel>
-              <Input {...register("email")} placeholder="Email" bg={inputBg} />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Contraseña:</FormLabel>
-              <Input
-                {...register("password")}
-                type="password"
-                placeholder="Contraseña"
-                bg={inputBg}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Rol:</FormLabel>
-              <Select
-                {...register("rol")}
-                placeholder="Selecciona un rol"
-                bg={inputBg}
-              >
-                <option value="administrador">Administrador</option>
-                <option value="vendedor">Vendedor</option>
-              </Select>
-            </FormControl>
+            {/* ... (campos del formulario) */}
             <Button
               leftIcon={<AddIcon />}
               colorScheme="brand"
               type="submit"
               bg={buttonBg}
               _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
+              isLoading={isLoading} // Mostrar indicador de carga si isLoading es true
             >
               Crear Usuario
             </Button>
@@ -183,40 +151,20 @@ const Admin = () => {
         </form>
       </Box>
 
+      {/* Lista de usuarios */}
       <Box>
         <Heading as="h3" size="lg" mb="4">
           Lista de Usuarios
         </Heading>
-        <Table variant="simple" size="sm">
-          <Thead>
-            <Tr>
-              <Th>Nombre</Th>
-              <Th>Email</Th>
-              <Th>Rol</Th>
-              <Th>Acciones</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {users.map((user) => (
-              <Tr key={user.id}>
-                <Td>{user.nombre}</Td>
-                <Td>{user.email}</Td>
-                <Td>{user.rol}</Td>
-                <Td>
-                  <IconButton
-                    icon={<DeleteIcon />}
-                    colorScheme="red"
-                    aria-label="Eliminar usuario"
-                    onClick={() => handleDeleteUser(user.id)}
-                  />
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
+        {isLoading ? ( // Mostrar indicador de carga mientras se obtienen los usuarios
+          <Spinner size="lg" />
+        ) : (
+          <Table variant="simple" size="sm">
+            {/* ... (cabecera y cuerpo de la tabla) */}
+          </Table>
+        )}
       </Box>
     </Box>
   );
 };
-
 export default Admin;

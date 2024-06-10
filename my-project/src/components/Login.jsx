@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Box,
@@ -15,13 +15,14 @@ import {
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import useStore from "../store";
+import theme from "../theme";
 
 const MotionBox = motion(Box);
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const login = useStore((state) => state.login);
   const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -35,10 +36,18 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password, toast); // Pasa toast a login
+      await login(data.username, data.password, toast);
       navigate("/");
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Error en el inicio de sesión:", error);
+      // Manejar errores, por ejemplo, mostrar un toast de error
+      toast({
+        title: "Error",
+        description: "Credenciales inválidas. Por favor, inténtalo de nuevo.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -50,30 +59,30 @@ const Login = () => {
       bg={useColorModeValue("gray.100", "gray.900")}
     >
       <MotionBox
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         p="8"
         borderWidth="1px"
         borderRadius="md"
-        boxShadow="md"
+        boxShadow="lg"
         bg={formBackground}
         width="400px"
       >
         <Heading as="h1" size="lg" textAlign="center" mb="6" color={textColor}>
           Iniciar Sesión
         </Heading>
-
         <form onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing={4} align="stretch">
+            {/* Campos del formulario */}
             <FormControl>
-              <FormLabel htmlFor="email" color={textColor}>
-                Email:
+              <FormLabel htmlFor="username" color={textColor}>
+                Nombre de usuario:
               </FormLabel>
               <Input
-                id="email"
-                {...register("email")}
-                placeholder="Email"
+                id="username"
+                {...register("username")}
+                placeholder="Nombre de usuario"
                 bg={inputBackground}
                 color={textColor}
                 _focus={{
@@ -124,6 +133,8 @@ const Login = () => {
             </Button>
           </VStack>
         </form>
+
+        {/* Botón de cambio de modo de color */}
         <Button
           onClick={toggleColorMode}
           position="absolute"
