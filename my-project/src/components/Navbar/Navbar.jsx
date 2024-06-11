@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -7,17 +7,18 @@ import {
   Spacer,
   useColorModeValue,
   useColorMode,
-  Icon,
+  Heading,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
-import useStore from "../store";
+import useStore from "../../store";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
-  const location = useLocation(); // Obtiene la ubicación actual
+  const location = useLocation();
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -27,6 +28,21 @@ const Navbar = () => {
     logout();
     navigate("/login");
   };
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
+
+  // Decodifica el token JWT dentro de un useEffect
+  useEffect(() => {
+    if (user && user.token) {
+      const tokenToDecode = user.token.startsWith("Bearer ")
+        ? user.token.split(" ")[1]
+        : user.token;
+      const decodedToken = jwtDecode(tokenToDecode);
+      setIsAdmin(decodedToken.is_superuser);
+      setIsStaff(decodedToken.is_staff);
+    }
+  }, [user]);
 
   return (
     <Flex
@@ -38,17 +54,16 @@ const Navbar = () => {
       boxShadow="md"
     >
       <Flex alignItems="center">
-        <Box fontWeight="bold">
+        <Heading as="h3" size="md" fontWeight="bold">
           <Link to="/">Aplicación Bazar</Link>
-        </Box>
+        </Heading>
       </Flex>
       <Spacer />
 
-      {/* Menú para usuarios autenticados */}
       {user && (
         <Flex alignItems="center">
-          {/* Enlaces para administradores */}
-          {user.rol === "administrador" && (
+          {/* Opciones para administradores */}
+          {isAdmin && (
             <>
               <Button
                 as={Link}
@@ -58,7 +73,7 @@ const Navbar = () => {
                 variant="solid"
                 size="sm"
               >
-                Administración
+                Administración (Django)
               </Button>
               <Button
                 as={Link}
@@ -73,8 +88,8 @@ const Navbar = () => {
             </>
           )}
 
-          {/* Enlaces para administradores y vendedores */}
-          {(user.rol === "administrador" || user.rol === "vendedor") && (
+          {/* Opciones para administradores y staff */}
+          {(isAdmin || isStaff) && (
             <Button
               as={Link}
               to="/productos/nuevo"
@@ -87,7 +102,6 @@ const Navbar = () => {
             </Button>
           )}
 
-          {/* Botón de cerrar sesión */}
           <Button
             onClick={handleLogout}
             colorScheme="blue"
@@ -102,7 +116,7 @@ const Navbar = () => {
         </Flex>
       )}
 
-      {/* Botón de iniciar sesión para usuarios no autenticados */}
+      {/* Mostrar botón de inicio de sesión solo si el usuario no está autenticado y no está en la página de inicio de sesión */}
       {!user && location.pathname !== "/login" && (
         <Box>
           <Link to="/login">
@@ -119,7 +133,7 @@ const Navbar = () => {
         </Box>
       )}
 
-      {/* Botón de cambio de modo de color */}
+      {/* Botón para cambiar el modo de color */}
       <Button onClick={toggleColorMode} ml="4" variant="ghost">
         {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
       </Button>

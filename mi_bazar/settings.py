@@ -1,6 +1,5 @@
-# settings.py
+from datetime import timedelta
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-*^4qgtg+m*evansvj_&wcc_tkapc&g_5a6e=@*n*ckzat=@9_p"
+SECRET_KEY = "django-insecure-4(=(0r*uqq^=s@y6+4bxsx18#yz!9sv=+gu@$+m@*bumv^(r4p"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,23 +29,23 @@ INSTALLED_APPS = [
     "rest_framework",
     "usuarios",
     "productos",
-    "corsheaders",
-    "rest_framework.authtoken",
-    "drf_spectacular",
     "django_filters",
+    "corsheaders",
 ]
 REST_FRAMEWORK = {
+    # ...
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
+
+# Configurar MEDIA_ROOT para almacenar las imágenes subidas
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -55,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "mi_bazar.urls"
 
 TEMPLATES = [
     {
@@ -73,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+WSGI_APPLICATION = "mi_bazar.wsgi.application"
 
 
 # Database
@@ -127,24 +126,12 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-# settings.py
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+}
 
+
+## el modelo usuario es el que se va a usar para la autenticación
 AUTH_USER_MODEL = "usuarios.Usuario"
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
-
-MEDIA_ROOT = os.path.join(
-    BASE_DIR, "media"
-)  # Carpeta donde se guardarán las imágenes subidas
-MEDIA_URL = "/media/"
-
-# ... otras configuraciones ...
-
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",  # Backend por defecto de Django
-    "usuarios.models.UsuarioManager",  # Tu administrador de usuarios personalizado
-]
-
-# ... otras configuraciones ...

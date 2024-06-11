@@ -6,19 +6,21 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ChakraProvider } from "@chakra-ui/react";
-import Navbar from "./components/Navbar";
-import Admin from "./components/Admin";
-import Home from "./components/Home";
-import Login from "./components/Login";
-import ProductForm from "./components/ProductForm";
-import UserManagement from "./components/UserManagement";
+import Navbar from "./components/Navbar/Navbar";
+import Admin from "./components/Admin/Admin";
+import Home from "./components/Home/Home";
+import Login from "./components/Login/Login";
+import ProductForm from "./components/ProductForm/ProductForm";
+import UserManagement from "./components/UserManagement/UserManagement";
 import useStore from "./store";
+import theme from "./theme";
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children, roles }) => {
   const user = useStore((state) => state.user);
+  // Verificar si el usuario está autenticado y si tiene el rol adecuado
   if (!user || (roles && !roles.includes(user.rol))) {
-    return <Navigate to="/login" replace />; // Usar 'replace' para evitar duplicados en el historial
+    return <Navigate to="/login" replace />;
   }
   return children;
 };
@@ -27,16 +29,19 @@ function App() {
   const initializeStore = useStore((state) => state.initializeStore);
 
   useEffect(() => {
+    // Inicializar el store al cargar la aplicación
     initializeStore();
   }, []);
 
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <Router>
-        <Navbar />
+        <Navbar /> {/* Mostrar la barra de navegación en todas las rutas */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+
+          {/* Ruta protegida para la sección de administración */}
           <Route
             path="/admin"
             element={
@@ -45,6 +50,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Ruta protegida para crear productos */}
           <Route
             path="/productos/nuevo"
             element={
@@ -53,6 +60,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Ruta protegida para gestionar usuarios */}
           <Route
             path="/usuarios"
             element={

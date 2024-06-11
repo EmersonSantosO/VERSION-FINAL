@@ -1,3 +1,4 @@
+// src/components/ProductForm.jsx (Sin cambios)
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -16,8 +17,8 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import useStore from "../store";
-import theme from "../theme";
+import useStore from "../../store";
+import theme from "../../theme";
 
 const MotionBox = motion(Box);
 
@@ -51,12 +52,11 @@ const ProductForm = () => {
       formData.append(key, data[key]);
     }
     formData.append("imagen", image);
-
     try {
       const token = localStorage.getItem("token");
       await axios.post("/productos/", formData, {
         headers: {
-          Authorization: `Token ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });

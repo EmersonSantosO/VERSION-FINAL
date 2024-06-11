@@ -1,3 +1,4 @@
+// src/components/Login/Login.jsx
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -12,12 +13,14 @@ import {
   useColorModeValue,
   useColorMode,
   useToast,
+  Image,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import useStore from "../store";
-import theme from "../theme";
+import useStore from "../../store";
+import theme from "../../theme";
+import logo from "../../assets/logo.svg"; // Asegúrate de tener la imagen del logo en src/assets/
 
 const MotionBox = motion(Box);
 
@@ -40,7 +43,6 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
-      // Manejar errores, por ejemplo, mostrar un toast de error
       toast({
         title: "Error",
         description: "Credenciales inválidas. Por favor, inténtalo de nuevo.",
@@ -69,12 +71,20 @@ const Login = () => {
         bg={formBackground}
         width="400px"
       >
+        {/* Logo */}
+        <Image
+          src={logo}
+          alt="Logo de la aplicación"
+          boxSize="100px"
+          mx="auto"
+          mb="6"
+        />
+
         <Heading as="h1" size="lg" textAlign="center" mb="6" color={textColor}>
           Iniciar Sesión
         </Heading>
         <form onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing={4} align="stretch">
-            {/* Campos del formulario */}
             <FormControl>
               <FormLabel htmlFor="username" color={textColor}>
                 Nombre de usuario:
@@ -134,7 +144,7 @@ const Login = () => {
           </VStack>
         </form>
 
-        {/* Botón de cambio de modo de color */}
+        {/* Botón para cambiar el modo de color */}
         <Button
           onClick={toggleColorMode}
           position="absolute"

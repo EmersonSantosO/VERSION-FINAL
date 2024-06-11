@@ -1,15 +1,13 @@
+// src/components/Home/Home.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
   Text,
   Heading,
-  Grid,
-  GridItem,
   useToast,
   Image,
   useColorModeValue,
-  Spinner,
   Flex,
   InputGroup,
   InputLeftElement,
@@ -18,13 +16,13 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
-import useStore from "../store";
-import theme from "../theme";
+import useStore from "../../store";
+import theme from "../../theme";
 import { motion } from "framer-motion";
-import ProductForm from "./ProductForm"; // Importa el componente ProductForm
+import ProductForm from "../ProductForm/ProductForm";
+import DataList from "../DataList/DataList";
 
 const MotionBox = motion(Box);
-const MotionGridItem = motion(GridItem);
 
 const Home = () => {
   const { user, products, isLoading, fetchProducts, deleteProduct } =
@@ -33,6 +31,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Chakra UI Color Mode
   const bgColor = useColorModeValue(
     theme.colors.background.light,
     theme.colors.background.dark
@@ -43,12 +42,14 @@ const Home = () => {
   );
 
   useEffect(() => {
+    // Obtener productos al montar el componente y cuando cambia la página o el término de búsqueda
     if (user?.token) {
       fetchProducts(currentPage, searchTerm);
     }
   }, [user, fetchProducts, currentPage, searchTerm]);
 
   const handleDelete = async (productId) => {
+    // Eliminar producto
     try {
       await deleteProduct(productId);
       toast({
@@ -58,6 +59,7 @@ const Home = () => {
         duration: 3000,
         isClosable: true,
       });
+      // Actualizar la lista después de eliminar
       fetchProducts(currentPage, searchTerm);
     } catch (error) {
       console.error("Error al eliminar producto:", error);
@@ -85,6 +87,31 @@ const Home = () => {
     fetchProducts(newPage, searchTerm);
   };
 
+  // Configuración de columnas para DataList
+  const productColumns = [
+    {
+      key: "imagen",
+      header: "Imagen",
+      render: (product) => (
+        <Image src={product.imagen} alt={product.nombre} boxSize="50px" />
+      ),
+    },
+    { key: "nombre", header: "Nombre" },
+    { key: "descripcion", header: "Descripción" },
+    { key: "precio", header: "Precio" },
+    { key: "tipo", header: "Categoría" },
+  ];
+
+  // Configuración de acciones para DataList
+  const productActions = [
+    {
+      key: "delete",
+      label: "Eliminar",
+      onClick: handleDelete,
+      icon: <DeleteIcon />,
+    },
+  ];
+
   return (
     <MotionBox
       initial={{ opacity: 0 }}
@@ -98,7 +125,7 @@ const Home = () => {
         Productos
       </Heading>
 
-      {/* Formulario para crear nuevo producto */}
+      {/* Formulario para crear nuevo producto (solo para administradores y vendedores) */}
       {(user?.rol === "administrador" || user?.rol === "vendedor") && (
         <ProductForm />
       )}
@@ -131,73 +158,35 @@ const Home = () => {
         </InputRightElement>
       </InputGroup>
 
-      {/* Lista de productos */}
-      <Box>
-        {isLoading ? (
-          <Spinner size="lg" />
-        ) : (
-          <>
-            <Grid
-              templateColumns="repeat(auto-fit, minmax(240px, 1fr))"
-              gap={6}
-            >
-              {products.results && products.results.length > 0 ? (
-                products.results.map((product) => (
-                  <MotionGridItem key={product.id}>
-                    <ProductCard product={product} onDelete={handleDelete} />
-                  </MotionGridItem>
-                ))
-              ) : (
-                <Text>No se encontraron productos</Text>
-              )}
-            </Grid>
-
-            {/* Paginación */}
-            <Flex justifyContent="center" mt={4}>
-              <Button
-                onClick={() => handlePageChange(currentPage - 1)}
-                isDisabled={!products.previous}
-                mr={2}
-              >
-                Anterior
-              </Button>
-              <Text>Página {currentPage}</Text>
-              <Button
-                onClick={() => handlePageChange(currentPage + 1)}
-                isDisabled={!products.next}
-                ml={2}
-              >
-                Siguiente
-              </Button>
-            </Flex>
-          </>
-        )}
-      </Box>
-    </MotionBox>
-  );
-};
-
-// Componente para mostrar la tarjeta de un producto
-const ProductCard = ({ product, onDelete }) => {
-  const bgColor = useColorModeValue("white", "gray.700");
-
-  return (
-    <Box borderWidth="1px" borderRadius="md" p="4" bg={bgColor} boxShadow="md">
-      <Image src={product.imagen} alt={product.nombre} mb={4} />
-      <Text fontWeight="bold" mb={2}>
-        {product.nombre}
-      </Text>
-      <Text mb={2}>{product.descripcion}</Text>
-      <Text mb={2}>Precio: ${product.precio}</Text>
-      <Text mb={2}>Categoría: {product.tipo}</Text>
-      <IconButton
-        icon={<DeleteIcon />}
-        colorScheme="red"
-        aria-label="Eliminar producto"
-        onClick={() => onDelete(product.id)}
-        mt="4"
+      {/* Lista de productos usando DataList */}
+      <DataList
+        data={products.results || []} // Asegura que 'data' sea un array
+        columns={productColumns}
+        isLoading={isLoading}
+        actions={productActions}
       />
-    </Box>
+
+      {/* Paginación */}
+      {products.next || products.previous ? (
+        <Flex justifyContent="center" mt={4}>
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            isDisabled={!products.previous}
+            mr={2}
+          >
+            Anterior
+          </Button>
+          <Text>Página {currentPage}</Text>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            isDisabled={!products.next}
+            ml={2}
+          >
+            Siguiente
+          </Button>
+        </Flex>
+      ) : null}
+    </MotionBox>
   );
 };
 
