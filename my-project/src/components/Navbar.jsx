@@ -46,24 +46,45 @@ const Navbar = () => {
 
       {/* Menú para usuarios autenticados */}
       {user && (
-        <Box>
+        <Flex alignItems="center">
           {/* Enlaces para administradores */}
           {user.rol === "administrador" && (
             <>
-              <Link to="/admin" mx="2">
+              <Button
+                as={Link}
+                to="/admin"
+                mx="2"
+                colorScheme="teal"
+                variant="solid"
+                size="sm"
+              >
                 Administración
-              </Link>
-              <Link to="/usuarios" mx="2">
+              </Button>
+              <Button
+                as={Link}
+                to="/usuarios"
+                mx="2"
+                colorScheme="teal"
+                variant="solid"
+                size="sm"
+              >
                 Gestionar Usuarios
-              </Link>
+              </Button>
             </>
           )}
 
           {/* Enlaces para administradores y vendedores */}
           {(user.rol === "administrador" || user.rol === "vendedor") && (
-            <Link to="/productos/nuevo" mx="2">
+            <Button
+              as={Link}
+              to="/productos/nuevo"
+              mx="2"
+              colorScheme="teal"
+              variant="solid"
+              size="sm"
+            >
               Crear Producto
-            </Link>
+            </Button>
           )}
 
           {/* Botón de cerrar sesión */}
@@ -78,7 +99,7 @@ const Navbar = () => {
           >
             Cerrar sesión
           </Button>
-        </Box>
+        </Flex>
       )}
 
       {/* Botón de iniciar sesión para usuarios no autenticados */}

@@ -83,7 +83,7 @@ const UserManagement = () => {
       </Heading>
       {isLoading ? (
         <Spinner size="lg" />
-      ) : (
+      ) : Array.isArray(users) ? (
         <Table variant="simple" size="sm" bg={tableColor}>
           <Thead>
             <Tr>
@@ -101,6 +101,10 @@ const UserManagement = () => {
             ))}
           </Tbody>
         </Table>
+      ) : (
+        <Box>
+          <p>No hay usuarios disponibles.</p>
+        </Box>
       )}
     </Box>
   );

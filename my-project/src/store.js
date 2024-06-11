@@ -131,7 +131,15 @@ const useStore = create((set, get) => ({
       const response = await axios.get("/usuarios/", {
         headers: { Authorization: `Token ${token}` },
       });
-      set({ users: response.data, isLoading: false });
+      if (Array.isArray(response.data)) {
+        set({ users: response.data, isLoading: false });
+      } else {
+        console.error(
+          "La respuesta de usuarios no es un array:",
+          response.data
+        );
+        set({ isLoading: false });
+      }
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
       set({ isLoading: false });
