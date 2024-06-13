@@ -25,6 +25,10 @@ const AuthNavigation = () => {
           )
         }
       />
+      <Route
+        path="*"
+        element={<Navigate to={user ? "/" : "/login"} replace />}
+      />
     </Routes>
   );
 };

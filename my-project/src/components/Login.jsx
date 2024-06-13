@@ -40,7 +40,6 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
-      // Manejar errores, por ejemplo, mostrar un toast de error
       toast({
         title: "Error",
         description: "Credenciales inválidas. Por favor, inténtalo de nuevo.",
@@ -74,7 +73,6 @@ const Login = () => {
         </Heading>
         <form onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing={4} align="stretch">
-            {/* Campos del formulario */}
             <FormControl>
               <FormLabel htmlFor="username" color={textColor}>
                 Nombre de usuario:
@@ -134,7 +132,6 @@ const Login = () => {
           </VStack>
         </form>
 
-        {/* Botón de cambio de modo de color */}
         <Button
           onClick={toggleColorMode}
           position="absolute"

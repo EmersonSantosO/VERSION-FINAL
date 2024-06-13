@@ -6,6 +6,8 @@ import {
   Heading,
   FormControl,
   FormLabel,
+  Input,
+  Select,
   Table,
   Thead,
   Tbody,
@@ -13,7 +15,6 @@ import {
   Th,
   Td,
   useToast,
-  Select,
   IconButton,
   useColorModeValue,
   Spinner,
@@ -21,12 +22,12 @@ import {
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import useStore from "../store"; // Importación corregida
+import useStore from "../store";
 import theme from "../theme";
 
 const Admin = () => {
   const token = useStore((state) => state.user?.token);
-  const { users, setUsers, isLoading } = useStore(); // Accede a isLoading desde el store
+  const { users, setUsers, isLoading, fetchUsers } = useStore();
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
@@ -136,14 +137,65 @@ const Admin = () => {
         </Heading>
         <form onSubmit={handleSubmit(handleCreateUser)}>
           <VStack spacing={4} align="stretch">
-            {/* ... (campos del formulario) */}
+            <FormControl>
+              <FormLabel htmlFor="username">Nombre de usuario:</FormLabel>
+              <Input
+                id="username"
+                placeholder="Nombre de usuario"
+                {...register("username", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
+                color={textColor}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="email">Email:</FormLabel>
+              <Input
+                id="email"
+                placeholder="Email"
+                {...register("email", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
+                color={textColor}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="password">Contraseña:</FormLabel>
+              <Input
+                id="password"
+                placeholder="Contraseña"
+                type="password"
+                {...register("password", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
+                color={textColor}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="rol">Rol:</FormLabel>
+              <Select
+                id="rol"
+                placeholder="Selecciona un rol"
+                {...register("rol", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
+                color={textColor}
+              >
+                <option value="administrador">Administrador</option>
+                <option value="vendedor">Vendedor</option>
+              </Select>
+            </FormControl>
             <Button
               leftIcon={<AddIcon />}
               colorScheme="brand"
               type="submit"
               bg={buttonBg}
               _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
-              isLoading={isLoading} // Mostrar indicador de carga si isLoading es true
+              isLoading={isLoading}
             >
               Crear Usuario
             </Button>
@@ -156,15 +208,55 @@ const Admin = () => {
         <Heading as="h3" size="lg" mb="4">
           Lista de Usuarios
         </Heading>
-        {isLoading ? ( // Mostrar indicador de carga mientras se obtienen los usuarios
+        {isLoading ? (
           <Spinner size="lg" />
         ) : (
           <Table variant="simple" size="sm">
-            {/* ... (cabecera y cuerpo de la tabla) */}
+            <Thead>
+              <Tr>
+                <Th>ID</Th>
+                <Th>Email</Th>
+                <Th>Nombre</Th>
+                <Th>Apellido</Th>
+                <Th>Rol</Th>
+                <Th>Acciones</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {users.map((user) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  onDelete={handleDeleteUser}
+                />
+              ))}
+            </Tbody>
           </Table>
         )}
       </Box>
     </Box>
   );
 };
+
+// Componente para una fila de usuario
+const UserRow = ({ user, onDelete }) => (
+  <Tr>
+    <Td>{user.id}</Td>
+    <Td>{user.email}</Td>
+    <Td>{user.nombre}</Td>
+    <Td>{user.apellido}</Td>
+    <Td>{user.rol}</Td>
+    <Td>
+      <Button
+        leftIcon={<DeleteIcon />}
+        colorScheme="red"
+        variant="solid"
+        onClick={() => onDelete(user.id)}
+      >
+        Eliminar
+      </Button>
+    </Td>
+  </Tr>
+);
+
 export default Admin;

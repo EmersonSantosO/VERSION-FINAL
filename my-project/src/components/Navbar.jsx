@@ -7,7 +7,6 @@ import {
   Spacer,
   useColorModeValue,
   useColorMode,
-  Icon,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import useStore from "../store";
@@ -17,7 +16,7 @@ const Navbar = () => {
   const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
-  const location = useLocation(); // Obtiene la ubicación actual
+  const location = useLocation();
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -44,10 +43,8 @@ const Navbar = () => {
       </Flex>
       <Spacer />
 
-      {/* Menú para usuarios autenticados */}
       {user && (
         <Box>
-          {/* Enlaces para administradores */}
           {user.rol === "administrador" && (
             <>
               <Link to="/admin" mx="2">
@@ -58,15 +55,11 @@ const Navbar = () => {
               </Link>
             </>
           )}
-
-          {/* Enlaces para administradores y vendedores */}
           {(user.rol === "administrador" || user.rol === "vendedor") && (
             <Link to="/productos/nuevo" mx="2">
               Crear Producto
             </Link>
           )}
-
-          {/* Botón de cerrar sesión */}
           <Button
             onClick={handleLogout}
             colorScheme="blue"
@@ -81,7 +74,6 @@ const Navbar = () => {
         </Box>
       )}
 
-      {/* Botón de iniciar sesión para usuarios no autenticados */}
       {!user && location.pathname !== "/login" && (
         <Box>
           <Link to="/login">
@@ -98,7 +90,6 @@ const Navbar = () => {
         </Box>
       )}
 
-      {/* Botón de cambio de modo de color */}
       <Button onClick={toggleColorMode} ml="4" variant="ghost">
         {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
       </Button>

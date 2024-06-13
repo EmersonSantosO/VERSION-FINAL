@@ -1,4 +1,3 @@
-// store.js
 import { create } from "zustand";
 import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
@@ -17,7 +16,6 @@ const useStore = create((set, get) => ({
     const token = localStorage.getItem("token");
     if (token) {
       set({ isLoggedIn: true, isLoading: true });
-      axios.defaults.headers.common["Authorization"] = `Token ${token}`;
       try {
         const [userResponse, productsResponse, usersResponse] =
           await Promise.all([
@@ -42,28 +40,15 @@ const useStore = create((set, get) => ({
   login: async (username, password, toast) => {
     set({ isLoading: true });
     try {
-      console.log("Nombre de usuario:", username);
-      console.log("Contraseña:", password);
-      const response = await axios.post(
-        "/api-token-auth/",
-        {
-          username,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const response = await axios.post("/api-token-auth/", {
+        username,
+        password,
+      });
 
       const token = response.data.token;
       localStorage.setItem("token", token);
-
-      // Configura el token en los headers de Axios
       axios.defaults.headers.common["Authorization"] = `Token ${token}`;
 
-      // Ahora puedes hacer las otras peticiones
       const [userResponse, productsResponse, usersResponse] = await Promise.all(
         [
           axios.get("/usuarios/me/"),
@@ -109,14 +94,10 @@ const useStore = create((set, get) => ({
   fetchProducts: async (page = 1, search = "") => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem("token");
       const params = { page, search };
-      const response = await axios.get("/productos/", {
-        headers: { Authorization: `Token ${token}` },
-        params,
-      });
+      const response = await axios.get("/productos/", { params });
       set({
-        products: response.data, // Guarda la respuesta completa, incluyendo la paginación
+        products: response.data,
         isLoading: false,
       });
     } catch (error) {
@@ -124,13 +105,11 @@ const useStore = create((set, get) => ({
       set({ isLoading: false });
     }
   },
+
   fetchUsers: async () => {
     set({ isLoading: true });
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get("/usuarios/", {
-        headers: { Authorization: `Token ${token}` },
-      });
+      const response = await axios.get("/usuarios/");
       set({ users: response.data, isLoading: false });
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
@@ -140,13 +119,10 @@ const useStore = create((set, get) => ({
 
   deleteProduct: async (productId) => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`/productos/${productId}/`, {
-        headers: { Authorization: `Token ${token}` },
-      });
+      await axios.delete(`/productos/${productId}/`);
       set((state) => ({
         products: {
-          ...state.products, // Mantén las otras propiedades del objeto products
+          ...state.products,
           results: state.products.results.filter(
             (product) => product.id !== productId
           ),

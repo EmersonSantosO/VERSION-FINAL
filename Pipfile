@@ -10,6 +10,8 @@ django-cors-headers = "*"
 pillow = "*"
 drf-spectacular = "*"
 django-filter = "*"
+dj-rest-auth = "*"
+django-allauth = "*"
 
 [dev-packages]
 

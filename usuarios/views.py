@@ -1,4 +1,3 @@
-# usuarios/views.py
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -30,7 +29,7 @@ class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CustomAuthToken(ObtainAuthToken):
-    serializer_class = AuthTokenSerializer  # Configura el serializador
+    serializer_class = AuthTokenSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -39,8 +38,7 @@ class CustomAuthToken(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
 
-        # Verifica la contraseña
-        if not check_password(request.data["password"], user.password):
+        if not user.check_password(request.data["password"]):
             return Response({"error": "Credenciales incorrectas"}, status=400)
 
         token, created = Token.objects.get_or_create(user=user)
@@ -48,7 +46,7 @@ class CustomAuthToken(ObtainAuthToken):
             {
                 "token": token.key,
                 "user_id": user.pk,
-                "email": user.email,
+                "username": user.username,
                 "rol": user.rol,
             }
         )

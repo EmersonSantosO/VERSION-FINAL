@@ -13,12 +13,13 @@ import Login from "./components/Login";
 import ProductForm from "./components/ProductForm";
 import UserManagement from "./components/UserManagement";
 import useStore from "./store";
+import theme from "./theme";
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children, roles }) => {
   const user = useStore((state) => state.user);
   if (!user || (roles && !roles.includes(user.rol))) {
-    return <Navigate to="/login" replace />; // Usar 'replace' para evitar duplicados en el historial
+    return <Navigate to="/login" replace />;
   }
   return children;
 };
@@ -28,14 +29,21 @@ function App() {
 
   useEffect(() => {
     initializeStore();
-  }, []);
+  }, [initializeStore]);
 
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <Router>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route
             path="/admin"
@@ -61,6 +69,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </ChakraProvider>

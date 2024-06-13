@@ -13,9 +13,9 @@ import {
   useToast,
   FormErrorMessage,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
 import useStore from "../store";
 import theme from "../theme";
 
@@ -23,7 +23,7 @@ const MotionBox = motion(Box);
 
 const ProductForm = () => {
   const { register, handleSubmit, reset, formState } = useForm();
-  const { errors } = formState;
+  const { errors, isSubmitting } = formState;
   const [image, setImage] = useState(null);
 
   const navigate = useNavigate();
@@ -135,7 +135,15 @@ const ProductForm = () => {
             placeholder="Selecciona un tipo"
             error={errors.tipo}
             register={register("tipo", { required: "Este campo es requerido" })}
-          />
+          >
+            <option value="aseo">Aseo</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="carnes">Carnes</option>
+            <option value="lacteos">Lacteos</option>
+            <option value="pastas">Pastas</option>
+            <option value="snacks">Snacks</option>
+            <option value="otros">Otros</option>
+          </SelectComponent>
           <InputComponent
             inputBg={inputBg}
             label="Precio"
@@ -151,7 +159,6 @@ const ProductForm = () => {
               },
             })}
           />
-
           <FormControl>
             <FormLabel htmlFor="imagen">Imagen:</FormLabel>
             <Input
@@ -166,6 +173,7 @@ const ProductForm = () => {
             type="submit"
             bg={buttonBg}
             _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
+            isLoading={isSubmitting}
           >
             Crear Producto
           </Button>
@@ -175,7 +183,6 @@ const ProductForm = () => {
   );
 };
 
-// Componente reusable para inputs
 const InputComponent = ({
   label,
   id,
@@ -200,7 +207,6 @@ const InputComponent = ({
   </FormControl>
 );
 
-// Componente reusable para selects
 const SelectComponent = ({
   label,
   id,
@@ -209,6 +215,8 @@ const SelectComponent = ({
   register,
   inputBg,
   textColor,
+  children,
+  ...rest
 }) => (
   <FormControl isInvalid={error}>
     <FormLabel htmlFor={id}>{label}:</FormLabel>
@@ -218,14 +226,9 @@ const SelectComponent = ({
       bg={inputBg}
       color={textColor}
       {...register}
+      {...rest}
     >
-      <option value="aseo">Aseo</option>
-      <option value="bebidas">Bebidas</option>
-      <option value="carnes">Carnes</option>
-      <option value="lacteos">Lacteos</option>
-      <option value="pastas">Pastas</option>
-      <option value="snacks">Snacks</option>
-      <option value="otros">Otros</option>
+      {children}
     </Select>
     <FormErrorMessage>{error && error.message}</FormErrorMessage>
   </FormControl>
