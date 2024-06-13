@@ -24,7 +24,7 @@ const MotionBox = motion(Box);
 const Login = () => {
   const login = useStore((state) => state.login);
   const { register, handleSubmit } = useForm();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Añadido aquí
   const [showPassword, setShowPassword] = useState(false);
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
@@ -36,8 +36,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.username, data.password, toast);
-      navigate("/");
+      await login(data.username, data.password, toast, navigate); // Añadido navigate aquí
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
       toast({

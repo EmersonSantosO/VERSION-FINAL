@@ -1,5 +1,4 @@
 # usuarios/serializers.py
-# usuarios/serializers.py
 from rest_framework import serializers
 from .models import Usuario
 
@@ -10,6 +9,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "email",
+            "rut",  # Agrega el campo rut aquí
             "nombre",
             "apellido",
             "telefono",
@@ -25,7 +25,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         fields = [
             "email",
             "password",
-            "rut",
+            "rut",  # Agrega el campo rut aquí
             "nombre",
             "apellido",
             "telefono",

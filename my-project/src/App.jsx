@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -15,7 +16,6 @@ import UserManagement from "./components/UserManagement";
 import useStore from "./store";
 import theme from "./theme";
 
-// Componente para rutas protegidas
 const ProtectedRoute = ({ children, roles }) => {
   const user = useStore((state) => state.user);
   if (!user || (roles && !roles.includes(user.rol))) {

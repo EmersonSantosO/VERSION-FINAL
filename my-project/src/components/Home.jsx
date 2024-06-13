@@ -1,3 +1,4 @@
+// src/components/Home.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -141,8 +142,8 @@ const Home = () => {
               templateColumns="repeat(auto-fit, minmax(240px, 1fr))"
               gap={6}
             >
-              {products.results && products.results.length > 0 ? (
-                products.results.map((product) => (
+              {products && products.length > 0 ? (
+                products.map((product) => (
                   <MotionGridItem key={product.id}>
                     <ProductCard product={product} onDelete={handleDelete} />
                   </MotionGridItem>

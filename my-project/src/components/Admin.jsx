@@ -6,8 +6,6 @@ import {
   Heading,
   FormControl,
   FormLabel,
-  Input,
-  Select,
   Table,
   Thead,
   Tbody,
@@ -15,9 +13,10 @@ import {
   Th,
   Td,
   useToast,
-  IconButton,
-  useColorModeValue,
+  Select,
   Spinner,
+  Input,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ import theme from "../theme";
 
 const Admin = () => {
   const token = useStore((state) => state.user?.token);
-  const { users, setUsers, isLoading, fetchUsers } = useStore();
+  const { users, setUsers, isLoading, setLoading } = useStore();
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
@@ -44,11 +43,10 @@ const Admin = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("/usuarios/", {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setUsers(response.data);
+        const response = await axios.get("/usuarios/");
+        setUsers(response.data.results); // Ajusta aquí si tu respuesta es diferente
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
         toast({
@@ -58,20 +56,20 @@ const Admin = () => {
           duration: 5000,
           isClosable: true,
         });
+      } finally {
+        setLoading(false);
       }
     };
 
     if (token) {
       fetchUsers();
     }
-  }, [token, toast, setUsers]);
+  }, [token, toast, setUsers, setLoading]);
 
   const handleCreateUser = async (data) => {
     try {
-      const response = await axios.post("/usuarios/", data, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      setUsers([...users, response.data]);
+      const response = await axios.post("/usuarios/", data);
+      setUsers((prevUsers) => [...prevUsers, response.data]);
       toast({
         title: "Usuario Creado",
         description: "El usuario se ha creado correctamente.",
@@ -83,8 +81,10 @@ const Admin = () => {
     } catch (error) {
       console.error("Error al crear el usuario:", error);
       toast({
-        title: "Error",
-        description: "Hubo un error al crear el usuario.",
+        title: "Error al crear el usuario",
+        description: error.response.data?.email
+          ? error.response.data.email[0]
+          : "Hubo un error al crear el usuario.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -94,10 +94,8 @@ const Admin = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`/usuarios/${userId}/`, {
-        headers: { Authorization: `Token ${token}` },
-      });
-      setUsers(users.filter((user) => user.id !== userId));
+      await axios.delete(`/usuarios/${userId}/`);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
       toast({
         title: "Usuario Eliminado",
         description: "El usuario se ha eliminado correctamente.",
@@ -138,55 +136,80 @@ const Admin = () => {
         <form onSubmit={handleSubmit(handleCreateUser)}>
           <VStack spacing={4} align="stretch">
             <FormControl>
-              <FormLabel htmlFor="username">Nombre de usuario:</FormLabel>
+              <FormLabel>Email</FormLabel>
               <Input
-                id="username"
-                placeholder="Nombre de usuario"
-                {...register("username", {
-                  required: "Este campo es requerido",
-                })}
+                type="email"
+                {...register("email", { required: "Este campo es requerido" })}
                 bg={inputBg}
-                color={textColor}
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="email">Email:</FormLabel>
+              <FormLabel>Contraseña</FormLabel>
               <Input
-                id="email"
-                placeholder="Email"
-                {...register("email", {
-                  required: "Este campo es requerido",
-                })}
-                bg={inputBg}
-                color={textColor}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Contraseña:</FormLabel>
-              <Input
-                id="password"
-                placeholder="Contraseña"
                 type="password"
                 {...register("password", {
                   required: "Este campo es requerido",
                 })}
                 bg={inputBg}
-                color={textColor}
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="rol">Rol:</FormLabel>
-              <Select
-                id="rol"
-                placeholder="Selecciona un rol"
-                {...register("rol", {
+              <FormLabel>RUT</FormLabel>
+              <Input
+                type="text"
+                {...register("rut", { required: "Este campo es requerido" })}
+                bg={inputBg}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Nombre</FormLabel>
+              <Input
+                type="text"
+                {...register("nombre", { required: "Este campo es requerido" })}
+                bg={inputBg}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Apellido</FormLabel>
+              <Input
+                type="text"
+                {...register("apellido", {
                   required: "Este campo es requerido",
                 })}
                 bg={inputBg}
-                color={textColor}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Teléfono</FormLabel>
+              <Input
+                type="text"
+                {...register("telefono", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Jornada</FormLabel>
+              <Select
+                {...register("jornada", {
+                  required: "Este campo es requerido",
+                })}
+                bg={inputBg}
               >
-                <option value="administrador">Administrador</option>
+                <option value="diurno">Diurno</option>
+                <option value="vespertino">Vespertino</option>
+                <option value="mixto">Mixto</option>
+              </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Rol</FormLabel>
+              <Select
+                {...register("rol", { required: "Este campo es requerido" })}
+                bg={inputBg}
+              >
                 <option value="vendedor">Vendedor</option>
+                <option value="administrador">Administrador</option>
               </Select>
             </FormControl>
             <Button
@@ -216,20 +239,39 @@ const Admin = () => {
               <Tr>
                 <Th>ID</Th>
                 <Th>Email</Th>
+                <Th>RUT</Th>
                 <Th>Nombre</Th>
                 <Th>Apellido</Th>
+                <Th>Teléfono</Th>
+                <Th>Jornada</Th>
                 <Th>Rol</Th>
                 <Th>Acciones</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {users.map((user) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  onDelete={handleDeleteUser}
-                />
-              ))}
+              {Array.isArray(users) &&
+                users.map((user) => (
+                  <Tr key={user.id}>
+                    <Td>{user.id}</Td>
+                    <Td>{user.email}</Td>
+                    <Td>{user.rut}</Td>
+                    <Td>{user.nombre}</Td>
+                    <Td>{user.apellido}</Td>
+                    <Td>{user.telefono}</Td>
+                    <Td>{user.jornada}</Td>
+                    <Td>{user.rol}</Td>
+                    <Td>
+                      <Button
+                        leftIcon={<DeleteIcon />}
+                        colorScheme="red"
+                        variant="solid"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
             </Tbody>
           </Table>
         )}
@@ -237,26 +279,5 @@ const Admin = () => {
     </Box>
   );
 };
-
-// Componente para una fila de usuario
-const UserRow = ({ user, onDelete }) => (
-  <Tr>
-    <Td>{user.id}</Td>
-    <Td>{user.email}</Td>
-    <Td>{user.nombre}</Td>
-    <Td>{user.apellido}</Td>
-    <Td>{user.rol}</Td>
-    <Td>
-      <Button
-        leftIcon={<DeleteIcon />}
-        colorScheme="red"
-        variant="solid"
-        onClick={() => onDelete(user.id)}
-      >
-        Eliminar
-      </Button>
-    </Td>
-  </Tr>
-);
 
 export default Admin;

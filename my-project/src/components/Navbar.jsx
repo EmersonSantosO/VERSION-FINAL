@@ -1,15 +1,18 @@
+// src/components/Navbar.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
   Flex,
-  Spacer,
   useColorModeValue,
   useColorMode,
+  Image,
+  Spacer,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import useStore from "../store";
+import logo from "../assets/logo (2).svg";
 
 const Navbar = () => {
   const user = useStore((state) => state.user);
@@ -37,27 +40,46 @@ const Navbar = () => {
       boxShadow="md"
     >
       <Flex alignItems="center">
+        <Image src={logo} alt="Logo" boxSize="50px" mr="2" />
         <Box fontWeight="bold">
           <Link to="/">Aplicación Bazar</Link>
         </Box>
       </Flex>
       <Spacer />
 
-      {user && (
+      {user ? (
         <Box>
           {user.rol === "administrador" && (
             <>
-              <Link to="/admin" mx="2">
-                Administración
+              <Link to="/admin">
+                <Button
+                  mx="2"
+                  variant="ghost"
+                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                >
+                  Administración
+                </Button>
               </Link>
-              <Link to="/usuarios" mx="2">
-                Gestionar Usuarios
+              <Link to="/usuarios">
+                <Button
+                  mx="2"
+                  variant="ghost"
+                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                >
+                  Gestionar Usuarios
+                </Button>
               </Link>
             </>
           )}
           {(user.rol === "administrador" || user.rol === "vendedor") && (
-            <Link to="/productos/nuevo" mx="2">
-              Crear Producto
+            <Link to="/productos/nuevo">
+              <Button
+                mx="2"
+                variant="ghost"
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Crear Producto
+              </Button>
             </Link>
           )}
           <Button
@@ -72,22 +94,22 @@ const Navbar = () => {
             Cerrar sesión
           </Button>
         </Box>
-      )}
-
-      {!user && location.pathname !== "/login" && (
-        <Box>
-          <Link to="/login">
-            <Button
-              colorScheme="blue"
-              bg={buttonBg}
-              _hover={{
-                bg: useColorModeValue("blue.600", "blue.200"),
-              }}
-            >
-              Iniciar sesión
-            </Button>
-          </Link>
-        </Box>
+      ) : (
+        location.pathname !== "/login" && (
+          <Box>
+            <Link to="/login">
+              <Button
+                colorScheme="blue"
+                bg={buttonBg}
+                _hover={{
+                  bg: useColorModeValue("blue.600", "blue.200"),
+                }}
+              >
+                Iniciar sesión
+              </Button>
+            </Link>
+          </Box>
+        )
       )}
 
       <Button onClick={toggleColorMode} ml="4" variant="ghost">

@@ -7,11 +7,6 @@ from rest_framework.authtoken.models import Token
 
 
 class UsuarioCreationForm(forms.ModelForm):
-    """
-    Formulario para crear nuevos usuarios. Incluye todos los campos requeridos,
-    más una repetición del password.
-    """
-
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
     password2 = forms.CharField(
         label="Password confirmation", widget=forms.PasswordInput
@@ -20,7 +15,6 @@ class UsuarioCreationForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = (
-            "username",
             "email",
             "rut",
             "nombre",
@@ -32,7 +26,6 @@ class UsuarioCreationForm(forms.ModelForm):
         )
 
     def clean_password2(self):
-        # Comprueba que los dos passwords coinciden
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
@@ -40,7 +33,6 @@ class UsuarioCreationForm(forms.ModelForm):
         return password2
 
     def save(self, commit=True):
-        # Guarda el password en formato hash
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
@@ -49,17 +41,11 @@ class UsuarioCreationForm(forms.ModelForm):
 
 
 class UsuarioChangeForm(forms.ModelForm):
-    """
-    Formulario para actualizar usuarios. Incluye todos los campos del usuario,
-    pero reemplaza el campo de password con uno de sólo lectura.
-    """
-
     password = ReadOnlyPasswordHashField()
 
     class Meta:
         model = Usuario
         fields = (
-            "username",
             "email",
             "password",
             "rut",
@@ -74,7 +60,6 @@ class UsuarioChangeForm(forms.ModelForm):
         )
 
     def clean_password(self):
-        # Independientemente de lo que el usuario provea, devolver el valor inicial.
         return self.initial["password"]
 
 
@@ -83,11 +68,11 @@ class UsuarioAdmin(BaseUserAdmin):
     form = UsuarioChangeForm
     add_form = UsuarioCreationForm
 
-    list_display = ("username", "email", "rut", "nombre", "apellido", "rol", "is_staff")
-    search_fields = ("username", "email", "rut", "nombre", "apellido")
+    list_display = ("email", "rut", "nombre", "apellido", "rol", "is_staff")
+    search_fields = ("email", "rut", "nombre", "apellido")
     list_filter = ("rol", "is_staff", "is_superuser", "is_active")
     fieldsets = (
-        (None, {"fields": ("username", "email", "password")}),
+        (None, {"fields": ("email", "password")}),
         (
             "Información personal",
             {"fields": ("rut", "nombre", "apellido", "telefono", "jornada", "imagen")},
@@ -100,7 +85,6 @@ class UsuarioAdmin(BaseUserAdmin):
             {
                 "classes": ("wide",),
                 "fields": (
-                    "username",
                     "email",
                     "password1",
                     "password2",
@@ -114,9 +98,9 @@ class UsuarioAdmin(BaseUserAdmin):
             },
         ),
     )
-    ordering = ("username",)
+    ordering = ("email",)
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        if not change:  # Solo crea un token si es un nuevo usuario
+        if not change:
             Token.objects.create(user=obj)

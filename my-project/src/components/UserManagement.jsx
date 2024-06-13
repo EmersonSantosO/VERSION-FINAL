@@ -19,7 +19,11 @@ import useStore from "../store";
 import theme from "../theme";
 
 const UserManagement = () => {
-  const { users, fetchUsers, isLoading } = useStore();
+  const { users, fetchUsers, isLoading } = useStore((state) => ({
+    users: state.users,
+    fetchUsers: state.fetchUsers,
+    isLoading: state.isLoading,
+  }));
   const user = useStore((state) => state.user);
   const toast = useToast();
 
@@ -42,7 +46,7 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`/api/usuarios/${userId}/`, {
+      await axios.delete(`/usuarios/${userId}/`, {
         headers: { Authorization: `Token ${token}` },
       });
       fetchUsers(); // Actualiza la lista después de eliminar
@@ -89,15 +93,37 @@ const UserManagement = () => {
             <Tr>
               <Th>ID</Th>
               <Th>Email</Th>
+              <Th>RUT</Th>
               <Th>Nombre</Th>
               <Th>Apellido</Th>
+              <Th>Teléfono</Th>
+              <Th>Jornada</Th>
               <Th>Rol</Th>
               <Th>Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>
             {users.map((user) => (
-              <UserRow key={user.id} user={user} onDelete={handleDelete} />
+              <Tr key={user.id}>
+                <Td>{user.id}</Td>
+                <Td>{user.email}</Td>
+                <Td>{user.rut}</Td>
+                <Td>{user.nombre}</Td>
+                <Td>{user.apellido}</Td>
+                <Td>{user.telefono}</Td>
+                <Td>{user.jornada}</Td>
+                <Td>{user.rol}</Td>
+                <Td>
+                  <Button
+                    leftIcon={<DeleteIcon />}
+                    colorScheme="red"
+                    variant="solid"
+                    onClick={() => handleDelete(user.id)}
+                  >
+                    Eliminar
+                  </Button>
+                </Td>
+              </Tr>
             ))}
           </Tbody>
         </Table>
@@ -105,26 +131,5 @@ const UserManagement = () => {
     </Box>
   );
 };
-
-// Componente para una fila de usuario
-const UserRow = ({ user, onDelete }) => (
-  <Tr>
-    <Td>{user.id}</Td>
-    <Td>{user.email}</Td>
-    <Td>{user.nombre}</Td>
-    <Td>{user.apellido}</Td>
-    <Td>{user.rol}</Td>
-    <Td>
-      <Button
-        leftIcon={<DeleteIcon />}
-        colorScheme="red"
-        variant="solid"
-        onClick={() => onDelete(user.id)}
-      >
-        Eliminar
-      </Button>
-    </Td>
-  </Tr>
-);
 
 export default UserManagement;
