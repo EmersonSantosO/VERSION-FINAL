@@ -11,8 +11,6 @@ import Navbar from "./components/Navbar";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
 import Login from "./components/Login";
-import ProductForm from "./components/ProductForm";
-import UserManagement from "./components/UserManagement";
 import useStore from "./store";
 import theme from "./theme";
 
@@ -54,18 +52,10 @@ function App() {
             }
           />
           <Route
-            path="/productos/nuevo"
+            path="/productos"
             element={
               <ProtectedRoute roles={["administrador", "vendedor"]}>
-                <ProductForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/usuarios"
-            element={
-              <ProtectedRoute roles={["administrador"]}>
-                <UserManagement />
+                <Home /> {/* Reutilizando el componente Home para Productos */}
               </ProtectedRoute>
             }
           />

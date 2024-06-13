@@ -19,12 +19,13 @@ import useStore from "../store";
 import logo from "../assets/logo (2).svg"; // Ajusta la ruta si es necesario
 
 const Navbar = () => {
-  const user = useStore((state) => state.user);
-  const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onToggle } = useDisclosure();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const user = useStore((state) => state.user);
+  const logout = useStore((state) => state.logout);
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -56,35 +57,24 @@ const Navbar = () => {
           {user ? (
             <>
               {user.rol === "administrador" && (
-                <>
-                  <Link to="/admin">
-                    <Button
-                      mx="2"
-                      variant="ghost"
-                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                    >
-                      Administración
-                    </Button>
-                  </Link>
-                  <Link to="/usuarios">
-                    <Button
-                      mx="2"
-                      variant="ghost"
-                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                    >
-                      Gestionar Usuarios
-                    </Button>
-                  </Link>
-                </>
-              )}
-              {(user.rol === "administrador" || user.rol === "vendedor") && (
-                <Link to="/productos/nuevo">
+                <Link to="/admin">
                   <Button
                     mx="2"
                     variant="ghost"
                     _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
                   >
-                    Crear Producto
+                    Administración
+                  </Button>
+                </Link>
+              )}
+              {(user.rol === "administrador" || user.rol === "vendedor") && (
+                <Link to="/productos">
+                  <Button
+                    mx="2"
+                    variant="ghost"
+                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                  >
+                    Productos
                   </Button>
                 </Link>
               )}
@@ -137,38 +127,26 @@ const Navbar = () => {
           {user ? (
             <>
               {user.rol === "administrador" && (
-                <>
-                  <Link to="/admin">
-                    <Button
-                      w="full"
-                      variant="ghost"
-                      onClick={onToggle}
-                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                    >
-                      Administración
-                    </Button>
-                  </Link>
-                  <Link to="/usuarios">
-                    <Button
-                      w="full"
-                      variant="ghost"
-                      onClick={onToggle}
-                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                    >
-                      Gestionar Usuarios
-                    </Button>
-                  </Link>
-                </>
-              )}
-              {(user.rol === "administrador" || user.rol === "vendedor") && (
-                <Link to="/productos/nuevo">
+                <Link to="/admin">
                   <Button
                     w="full"
                     variant="ghost"
                     onClick={onToggle}
                     _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
                   >
-                    Crear Producto
+                    Administración
+                  </Button>
+                </Link>
+              )}
+              {(user.rol === "administrador" || user.rol === "vendedor") && (
+                <Link to="/productos">
+                  <Button
+                    w="full"
+                    variant="ghost"
+                    onClick={onToggle}
+                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                  >
+                    Productos
                   </Button>
                 </Link>
               )}

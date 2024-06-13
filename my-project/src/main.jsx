@@ -1,11 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ChakraProvider } from "@chakra-ui/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
-import theme from "./theme"; // <--- Importa el tema
+import theme from "./theme";
+import queryClient from "./queryClient";
+import "./index.css"; // Importa Tailwind CSS
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <ChakraProvider theme={theme}>
-    <App />
-  </ChakraProvider>
+  <QueryClientProvider client={queryClient}>
+    <ChakraProvider theme={theme}>
+      <App />
+    </ChakraProvider>
+  </QueryClientProvider>
 );

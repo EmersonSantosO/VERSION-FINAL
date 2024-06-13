@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import {
   Box,
@@ -23,9 +23,12 @@ const MotionBox = motion(Box);
 
 const Login = () => {
   const login = useStore((state) => state.login);
-  const { register, handleSubmit } = useForm();
-  const navigate = useNavigate(); // Añadido aquí
-  const [showPassword, setShowPassword] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const navigate = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
 
@@ -36,7 +39,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.username, data.password, toast, navigate); // Añadido navigate aquí
+      await login(data.username, data.password, toast, navigate);
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
       toast({
@@ -72,13 +75,15 @@ const Login = () => {
         </Heading>
         <form onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing={4} align="stretch">
-            <FormControl>
+            <FormControl isInvalid={errors.username}>
               <FormLabel htmlFor="username" color={textColor}>
                 Nombre de usuario:
               </FormLabel>
               <Input
                 id="username"
-                {...register("username")}
+                {...register("username", {
+                  required: "Este campo es requerido",
+                })}
                 placeholder="Nombre de usuario"
                 bg={inputBackground}
                 color={textColor}
@@ -89,14 +94,16 @@ const Login = () => {
                 transition="all 0.2s ease-in-out"
               />
             </FormControl>
-            <FormControl>
+            <FormControl isInvalid={errors.password}>
               <FormLabel htmlFor="password" color={textColor}>
                 Contraseña:
               </FormLabel>
               <Input
                 id="password"
-                {...register("password")}
-                type={showPassword ? "text" : "password"}
+                {...register("password", {
+                  required: "Este campo es requerido",
+                })}
+                type="password"
                 placeholder="Contraseña"
                 bg={inputBackground}
                 color={textColor}
@@ -106,16 +113,6 @@ const Login = () => {
                 }}
                 transition="all 0.2s ease-in-out"
               />
-              <Button
-                type="button"
-                mt="2"
-                size="sm"
-                onClick={() => setShowPassword(!showPassword)}
-                color={textColor}
-                variant="link"
-              >
-                {showPassword ? "Ocultar" : "Mostrar"} contraseña
-              </Button>
             </FormControl>
             <Button
               colorScheme="blue"
@@ -130,7 +127,6 @@ const Login = () => {
             </Button>
           </VStack>
         </form>
-
         <Button
           onClick={toggleColorMode}
           position="absolute"

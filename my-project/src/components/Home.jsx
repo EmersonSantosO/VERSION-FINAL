@@ -1,5 +1,4 @@
-// src/components/Home.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -19,20 +18,33 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import useStore from "../store";
 import theme from "../theme";
-import { motion } from "framer-motion";
-import ProductForm from "./ProductForm"; // Importa el componente ProductForm
+import ProductForm from "./ProductForm";
 
 const MotionBox = motion(Box);
 const MotionGridItem = motion(GridItem);
 
+const fetchProducts = async ({ queryKey }) => {
+  const [_key, { page, search }] = queryKey;
+  const { data } = await axios.get(`/productos/?page=${page}&search=${search}`);
+  return data;
+};
+
 const Home = () => {
-  const { user, products, isLoading, fetchProducts, deleteProduct } =
-    useStore();
+  const user = useStore((state) => state.user); // Asegúrate de que user está definido
+  const deleteProduct = useStore((state) => state.deleteProduct);
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["products", { page: currentPage, search: searchTerm }],
+    queryFn: fetchProducts,
+  });
 
   const bgColor = useColorModeValue(
     theme.colors.background.light,
@@ -42,12 +54,6 @@ const Home = () => {
     theme.colors.text.light,
     theme.colors.text.dark
   );
-
-  useEffect(() => {
-    if (user?.token) {
-      fetchProducts(currentPage, searchTerm);
-    }
-  }, [user, fetchProducts, currentPage, searchTerm]);
 
   const handleDelete = async (productId) => {
     try {
@@ -59,7 +65,6 @@ const Home = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchProducts(currentPage, searchTerm);
     } catch (error) {
       console.error("Error al eliminar producto:", error);
       toast({
@@ -78,12 +83,10 @@ const Home = () => {
 
   const handleSearchSubmit = () => {
     setCurrentPage(1);
-    fetchProducts(1, searchTerm);
   };
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
-    fetchProducts(newPage, searchTerm);
   };
 
   return (
@@ -99,12 +102,10 @@ const Home = () => {
         Productos
       </Heading>
 
-      {/* Formulario para crear nuevo producto */}
       {(user?.rol === "administrador" || user?.rol === "vendedor") && (
         <ProductForm />
       )}
 
-      {/* Buscador de productos */}
       <InputGroup mb={4}>
         <InputLeftElement pointerEvents="none">
           <SearchIcon color="gray.300" />
@@ -132,18 +133,19 @@ const Home = () => {
         </InputRightElement>
       </InputGroup>
 
-      {/* Lista de productos */}
       <Box>
         {isLoading ? (
           <Spinner size="lg" />
+        ) : error ? (
+          <Text>Error al cargar los productos.</Text>
         ) : (
           <>
             <Grid
               templateColumns="repeat(auto-fit, minmax(240px, 1fr))"
               gap={6}
             >
-              {products && products.length > 0 ? (
-                products.map((product) => (
+              {data?.results && data.results.length > 0 ? (
+                data.results.map((product) => (
                   <MotionGridItem key={product.id}>
                     <ProductCard product={product} onDelete={handleDelete} />
                   </MotionGridItem>
@@ -153,11 +155,10 @@ const Home = () => {
               )}
             </Grid>
 
-            {/* Paginación */}
             <Flex justifyContent="center" mt={4}>
               <Button
                 onClick={() => handlePageChange(currentPage - 1)}
-                isDisabled={!products.previous}
+                isDisabled={!data.previous}
                 mr={2}
               >
                 Anterior
@@ -165,7 +166,7 @@ const Home = () => {
               <Text>Página {currentPage}</Text>
               <Button
                 onClick={() => handlePageChange(currentPage + 1)}
-                isDisabled={!products.next}
+                isDisabled={!data.next}
                 ml={2}
               >
                 Siguiente
@@ -178,7 +179,6 @@ const Home = () => {
   );
 };
 
-// Componente para mostrar la tarjeta de un producto
 const ProductCard = ({ product, onDelete }) => {
   const bgColor = useColorModeValue("white", "gray.700");
 
