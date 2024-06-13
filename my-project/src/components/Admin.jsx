@@ -14,19 +14,25 @@ import {
   Td,
   useToast,
   Select,
+  IconButton,
+  useColorModeValue,
   Spinner,
   Input,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import useStore from "../store";
+import useStore from "../store"; // Importación corregida
 import theme from "../theme";
 
 const Admin = () => {
   const token = useStore((state) => state.user?.token);
-  const { users, setUsers, isLoading, setLoading } = useStore();
+  const { users, setUsers, isLoading, setLoading } = useStore((state) => ({
+    users: state.users,
+    setUsers: state.setUsers,
+    isLoading: state.isLoading,
+    setLoading: state.setLoading,
+  }));
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
@@ -45,8 +51,10 @@ const Admin = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("/usuarios/");
-        setUsers(response.data.results); // Ajusta aquí si tu respuesta es diferente
+        const response = await axios.get("/api/usuarios/", {
+          headers: { Authorization: `Token ${token}` },
+        });
+        setUsers(response.data.results); // Asegúrate de que el formato es correcto
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
         toast({
@@ -68,7 +76,9 @@ const Admin = () => {
 
   const handleCreateUser = async (data) => {
     try {
-      const response = await axios.post("/usuarios/", data);
+      const response = await axios.post("/api/usuarios/", data, {
+        headers: { Authorization: `Token ${token}` },
+      });
       setUsers((prevUsers) => [...prevUsers, response.data]);
       toast({
         title: "Usuario Creado",
@@ -82,7 +92,7 @@ const Admin = () => {
       console.error("Error al crear el usuario:", error);
       toast({
         title: "Error al crear el usuario",
-        description: error.response.data?.email
+        description: error.response?.data?.email
           ? error.response.data.email[0]
           : "Hubo un error al crear el usuario.",
         status: "error",
@@ -94,7 +104,9 @@ const Admin = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`/usuarios/${userId}/`);
+      await axios.delete(`/api/usuarios/${userId}/`, {
+        headers: { Authorization: `Token ${token}` },
+      });
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
       toast({
         title: "Usuario Eliminado",
@@ -136,66 +148,62 @@ const Admin = () => {
         <form onSubmit={handleSubmit(handleCreateUser)}>
           <VStack spacing={4} align="stretch">
             <FormControl>
-              <FormLabel>Email</FormLabel>
+              <FormLabel htmlFor="email">Email:</FormLabel>
               <Input
-                type="email"
+                id="email"
+                placeholder="Email"
+                bg={inputBg}
                 {...register("email", { required: "Este campo es requerido" })}
-                bg={inputBg}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Contraseña</FormLabel>
+              <FormLabel htmlFor="rut">RUT:</FormLabel>
               <Input
-                type="password"
-                {...register("password", {
-                  required: "Este campo es requerido",
-                })}
+                id="rut"
+                placeholder="RUT"
                 bg={inputBg}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>RUT</FormLabel>
-              <Input
-                type="text"
                 {...register("rut", { required: "Este campo es requerido" })}
-                bg={inputBg}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Nombre</FormLabel>
+              <FormLabel htmlFor="nombre">Nombre:</FormLabel>
               <Input
-                type="text"
+                id="nombre"
+                placeholder="Nombre"
+                bg={inputBg}
                 {...register("nombre", { required: "Este campo es requerido" })}
-                bg={inputBg}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Apellido</FormLabel>
+              <FormLabel htmlFor="apellido">Apellido:</FormLabel>
               <Input
-                type="text"
+                id="apellido"
+                placeholder="Apellido"
+                bg={inputBg}
                 {...register("apellido", {
                   required: "Este campo es requerido",
                 })}
-                bg={inputBg}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Teléfono</FormLabel>
+              <FormLabel htmlFor="telefono">Teléfono:</FormLabel>
               <Input
-                type="text"
+                id="telefono"
+                placeholder="Teléfono"
+                bg={inputBg}
                 {...register("telefono", {
                   required: "Este campo es requerido",
                 })}
-                bg={inputBg}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Jornada</FormLabel>
+              <FormLabel htmlFor="jornada">Jornada:</FormLabel>
               <Select
+                id="jornada"
+                bg={inputBg}
                 {...register("jornada", {
                   required: "Este campo es requerido",
                 })}
-                bg={inputBg}
               >
                 <option value="diurno">Diurno</option>
                 <option value="vespertino">Vespertino</option>
@@ -203,10 +211,11 @@ const Admin = () => {
               </Select>
             </FormControl>
             <FormControl>
-              <FormLabel>Rol</FormLabel>
+              <FormLabel htmlFor="rol">Rol:</FormLabel>
               <Select
-                {...register("rol", { required: "Este campo es requerido" })}
+                id="rol"
                 bg={inputBg}
+                {...register("rol", { required: "Este campo es requerido" })}
               >
                 <option value="vendedor">Vendedor</option>
                 <option value="administrador">Administrador</option>
@@ -218,7 +227,7 @@ const Admin = () => {
               type="submit"
               bg={buttonBg}
               _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
-              isLoading={isLoading}
+              isLoading={isLoading} // Mostrar indicador de carga si isLoading es true
             >
               Crear Usuario
             </Button>
@@ -249,29 +258,28 @@ const Admin = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {Array.isArray(users) &&
-                users.map((user) => (
-                  <Tr key={user.id}>
-                    <Td>{user.id}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>{user.rut}</Td>
-                    <Td>{user.nombre}</Td>
-                    <Td>{user.apellido}</Td>
-                    <Td>{user.telefono}</Td>
-                    <Td>{user.jornada}</Td>
-                    <Td>{user.rol}</Td>
-                    <Td>
-                      <Button
-                        leftIcon={<DeleteIcon />}
-                        colorScheme="red"
-                        variant="solid"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        Eliminar
-                      </Button>
-                    </Td>
-                  </Tr>
-                ))}
+              {users.map((user) => (
+                <Tr key={user.id}>
+                  <Td>{user.id}</Td>
+                  <Td>{user.email}</Td>
+                  <Td>{user.rut}</Td>
+                  <Td>{user.nombre}</Td>
+                  <Td>{user.apellido}</Td>
+                  <Td>{user.telefono}</Td>
+                  <Td>{user.jornada}</Td>
+                  <Td>{user.rol}</Td>
+                  <Td>
+                    <Button
+                      leftIcon={<DeleteIcon />}
+                      colorScheme="red"
+                      variant="solid"
+                      onClick={() => handleDeleteUser(user.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
             </Tbody>
           </Table>
         )}

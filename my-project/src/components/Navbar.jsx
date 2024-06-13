@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -9,15 +8,21 @@ import {
   useColorMode,
   Image,
   Spacer,
+  IconButton,
+  Collapse,
+  VStack,
+  useDisclosure,
+  HStack,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon, HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 import useStore from "../store";
-import logo from "../assets/logo (2).svg";
+import logo from "../assets/logo (2).svg"; // Ajusta la ruta si es necesario
 
 const Navbar = () => {
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
+  const { isOpen, onToggle } = useDisclosure();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,91 +36,180 @@ const Navbar = () => {
   };
 
   return (
-    <Flex
-      as="nav"
-      p="4"
-      bg={bgColor}
-      color={textColor}
-      alignItems="center"
-      boxShadow="md"
-    >
-      <Flex alignItems="center">
-        <Image src={logo} alt="Logo" boxSize="50px" mr="2" />
-        <Box fontWeight="bold">
-          <Link to="/">Aplicación Bazar</Link>
-        </Box>
-      </Flex>
-      <Spacer />
-
-      {user ? (
-        <Box>
-          {user.rol === "administrador" && (
+    <Box>
+      <Flex
+        as="nav"
+        p="4"
+        bg={bgColor}
+        color={textColor}
+        alignItems="center"
+        boxShadow="md"
+      >
+        <Flex alignItems="center">
+          <Image src={logo} alt="Logo" boxSize="50px" mr="2" />
+          <Box fontWeight="bold">
+            <Link to="/">Aplicación Bazar</Link>
+          </Box>
+        </Flex>
+        <Spacer />
+        <HStack display={{ base: "none", md: "flex" }}>
+          {user ? (
             <>
-              <Link to="/admin">
-                <Button
-                  mx="2"
-                  variant="ghost"
-                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                >
-                  Administración
-                </Button>
-              </Link>
-              <Link to="/usuarios">
-                <Button
-                  mx="2"
-                  variant="ghost"
-                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                >
-                  Gestionar Usuarios
-                </Button>
-              </Link>
-            </>
-          )}
-          {(user.rol === "administrador" || user.rol === "vendedor") && (
-            <Link to="/productos/nuevo">
+              {user.rol === "administrador" && (
+                <>
+                  <Link to="/admin">
+                    <Button
+                      mx="2"
+                      variant="ghost"
+                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                    >
+                      Administración
+                    </Button>
+                  </Link>
+                  <Link to="/usuarios">
+                    <Button
+                      mx="2"
+                      variant="ghost"
+                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                    >
+                      Gestionar Usuarios
+                    </Button>
+                  </Link>
+                </>
+              )}
+              {(user.rol === "administrador" || user.rol === "vendedor") && (
+                <Link to="/productos/nuevo">
+                  <Button
+                    mx="2"
+                    variant="ghost"
+                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                  >
+                    Crear Producto
+                  </Button>
+                </Link>
+              )}
               <Button
-                mx="2"
-                variant="ghost"
-                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                onClick={handleLogout}
+                colorScheme="blue"
+                bg={buttonBg}
+                _hover={{
+                  bg: useColorModeValue("blue.600", "blue.200"),
+                }}
+                ml="4"
               >
-                Crear Producto
+                Cerrar sesión
               </Button>
-            </Link>
+            </>
+          ) : (
+            location.pathname !== "/login" && (
+              <Link to="/login">
+                <Button
+                  colorScheme="blue"
+                  bg={buttonBg}
+                  _hover={{
+                    bg: useColorModeValue("blue.600", "blue.200"),
+                  }}
+                >
+                  Iniciar sesión
+                </Button>
+              </Link>
+            )
           )}
-          <Button
-            onClick={handleLogout}
-            colorScheme="blue"
-            bg={buttonBg}
-            _hover={{
-              bg: useColorModeValue("blue.600", "blue.200"),
-            }}
-            ml="4"
-          >
-            Cerrar sesión
+          <Button onClick={toggleColorMode} ml="4" variant="ghost">
+            {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
           </Button>
-        </Box>
-      ) : (
-        location.pathname !== "/login" && (
-          <Box>
-            <Link to="/login">
+        </HStack>
+        <IconButton
+          aria-label="Toggle Navigation"
+          icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+          display={{ base: "flex", md: "none" }}
+          onClick={onToggle}
+        />
+      </Flex>
+      <Collapse in={isOpen} animateOpacity>
+        <VStack
+          bg={bgColor}
+          color={textColor}
+          display={{ md: "none" }}
+          p={4}
+          spacing={4}
+        >
+          {user ? (
+            <>
+              {user.rol === "administrador" && (
+                <>
+                  <Link to="/admin">
+                    <Button
+                      w="full"
+                      variant="ghost"
+                      onClick={onToggle}
+                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                    >
+                      Administración
+                    </Button>
+                  </Link>
+                  <Link to="/usuarios">
+                    <Button
+                      w="full"
+                      variant="ghost"
+                      onClick={onToggle}
+                      _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                    >
+                      Gestionar Usuarios
+                    </Button>
+                  </Link>
+                </>
+              )}
+              {(user.rol === "administrador" || user.rol === "vendedor") && (
+                <Link to="/productos/nuevo">
+                  <Button
+                    w="full"
+                    variant="ghost"
+                    onClick={onToggle}
+                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                  >
+                    Crear Producto
+                  </Button>
+                </Link>
+              )}
               <Button
+                w="full"
+                onClick={() => {
+                  handleLogout();
+                  onToggle();
+                }}
                 colorScheme="blue"
                 bg={buttonBg}
                 _hover={{
                   bg: useColorModeValue("blue.600", "blue.200"),
                 }}
               >
-                Iniciar sesión
+                Cerrar sesión
               </Button>
-            </Link>
-          </Box>
-        )
-      )}
-
-      <Button onClick={toggleColorMode} ml="4" variant="ghost">
-        {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-      </Button>
-    </Flex>
+            </>
+          ) : (
+            location.pathname !== "/login" && (
+              <Link to="/login">
+                <Button
+                  w="full"
+                  colorScheme="blue"
+                  bg={buttonBg}
+                  onClick={onToggle}
+                  _hover={{
+                    bg: useColorModeValue("blue.600", "blue.200"),
+                  }}
+                >
+                  Iniciar sesión
+                </Button>
+              </Link>
+            )
+          )}
+          <Button onClick={toggleColorMode} variant="ghost">
+            {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+          </Button>
+        </VStack>
+      </Collapse>
+    </Box>
   );
 };
 

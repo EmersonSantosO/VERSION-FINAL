@@ -4,7 +4,6 @@ import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
 
 axios.defaults.baseURL = API_BASE_URL;
-
 const useStore = create((set, get) => ({
   user: null,
   isLoggedIn: false,
@@ -39,6 +38,8 @@ const useStore = create((set, get) => ({
       }
     }
   },
+
+  setUsers: (users) => set({ users }),
 
   login: async (username, password, toast, navigate) => {
     set({ isLoading: true });
