@@ -36,7 +36,7 @@ const fetchProducts = async ({ queryKey }) => {
 
 const Home = () => {
   const user = useStore((state) => state.user);
-  const deleteProduct = useStore((state) => state.deleteProduct);
+  const deleteProduct = useStore((state) => state.deleteProduct); // Importar deleteProduct desde el store
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +58,7 @@ const Home = () => {
 
   const handleDelete = async (productId) => {
     try {
-      await deleteProduct(productId);
+      await deleteProduct(productId); // Llamar a deleteProduct
       toast({
         title: "Producto Eliminado",
         description: "El producto se ha eliminado correctamente.",

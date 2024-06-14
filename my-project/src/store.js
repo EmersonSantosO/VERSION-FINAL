@@ -118,6 +118,18 @@ const useStore = create((set) => ({
       throw error;
     }
   },
+
+  deleteProduct: async (productId) => {
+    try {
+      await axios.delete(`/productos/${productId}/`);
+      set((state) => ({
+        products: state.products.filter((product) => product.id !== productId),
+      }));
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      throw error;
+    }
+  },
 }));
 
 export default useStore;

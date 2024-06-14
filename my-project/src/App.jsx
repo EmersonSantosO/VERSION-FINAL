@@ -15,7 +15,6 @@ import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "react-query";
 
-// Crear una instancia de QueryClient
 const queryClient = new QueryClient();
 
 function App() {
@@ -57,8 +56,7 @@ function App() {
               path="/productos"
               element={
                 <ProtectedRoute roles={["administrador", "vendedor"]}>
-                  <Home />{" "}
-                  {/* Reutilizando el componente Home para Productos */}
+                  <Home />
                 </ProtectedRoute>
               }
             />

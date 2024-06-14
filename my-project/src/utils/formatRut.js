@@ -1,6 +1,23 @@
 // src/utils/formatRut.js
 
-// Formato de RUT: 12345678-9 -> 12.345.678-9
 export function formatRut(rut) {
-  return rut.replace(/^(\d{1,2})(\d{3})(\d{3})([\dkK])$/, "$1.$2.$3-$4");
+  const cleanRut = rut.replace(/[^\dkK]/g, ""); // Elimina cualquier carácter que no sea un número o 'k'/'K'
+
+  if (cleanRut.length <= 1) return cleanRut;
+
+  let result = cleanRut.slice(-1); // Start with the last digit/letter (the verifier)
+  let counter = 0;
+
+  for (let i = cleanRut.length - 2; i >= 0; i--) {
+    if (counter === 3) {
+      result = `.${result}`;
+      counter = 0;
+    }
+    result = cleanRut[i] + result;
+    counter++;
+  }
+
+  return result.length > 1
+    ? result.slice(0, -1) + "-" + result.slice(-1)
+    : result;
 }

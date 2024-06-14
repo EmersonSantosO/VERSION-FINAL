@@ -4,16 +4,15 @@ import {
   Button,
   VStack,
   Heading,
-  FormControl,
-  FormLabel,
-  Input,
   useToast,
   useColorModeValue,
-  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import theme from "../theme";
+import { formatRut } from "../utils/formatRut";
+import InputComponent from "./common/InputComponent";
+import SelectComponent from "./common/SelectComponent";
 
 const UserForm = ({ onUserCreated }) => {
   const { register, handleSubmit, reset, formState } = useForm();
@@ -33,6 +32,7 @@ const UserForm = ({ onUserCreated }) => {
         isClosable: true,
       });
       reset();
+      setRut(""); // Resetea el campo RUT
       onUserCreated(response.data);
     } catch (error) {
       toast({
@@ -47,113 +47,123 @@ const UserForm = ({ onUserCreated }) => {
 
   const handleRutChange = (event) => {
     const inputRut = event.target.value;
-    setRut(inputRut);
+    const formattedRut = formatRut(inputRut);
+    setRut(formattedRut);
   };
 
-  const inputBg = useColorModeValue("gray.100", "gray.700");
+  const formBackground = useColorModeValue("white", "gray.700");
+  const inputBg = useColorModeValue("gray.100", "gray.600");
+  const textColor = useColorModeValue("gray.800", "white");
 
   return (
     <Box
       p="8"
-      bg={useColorModeValue("white", "gray.800")}
+      bg={formBackground}
       boxShadow="md"
       borderRadius="md"
+      width="400px"
+      mx="auto"
     >
-      <Heading as="h3" size="lg" mb="4">
+      <Heading as="h3" size="lg" mb="4" color={textColor}>
         Crear Nuevo Usuario
       </Heading>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
-          <FormControl id="email" isInvalid={errors.email}>
-            <FormLabel>Email</FormLabel>
-            <Input
-              type="email"
-              {...register("email", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.email && errors.email.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="password" isInvalid={errors.password}>
-            <FormLabel>Contraseña</FormLabel>
-            <Input
-              type="password"
-              {...register("password", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.password && errors.password.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="rut" isInvalid={errors.rut}>
-            <FormLabel>RUT</FormLabel>
-            <Input
-              type="text"
-              value={rut}
-              onChange={handleRutChange}
-              {...register("rut", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.rut && errors.rut.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="nombre" isInvalid={errors.nombre}>
-            <FormLabel>Nombre</FormLabel>
-            <Input
-              type="text"
-              {...register("nombre", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.nombre && errors.nombre.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="apellido" isInvalid={errors.apellido}>
-            <FormLabel>Apellido</FormLabel>
-            <Input
-              type="text"
-              {...register("apellido", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.apellido && errors.apellido.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="telefono" isInvalid={errors.telefono}>
-            <FormLabel>Teléfono</FormLabel>
-            <Input
-              type="text"
-              {...register("telefono", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.telefono && errors.telefono.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="jornada" isInvalid={errors.jornada}>
-            <FormLabel>Jornada</FormLabel>
-            <Input
-              type="text"
-              {...register("jornada", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.jornada && errors.jornada.message}
-            </FormErrorMessage>
-          </FormControl>
-          <FormControl id="rol" isInvalid={errors.rol}>
-            <FormLabel>Rol</FormLabel>
-            <Input
-              type="text"
-              {...register("rol", { required: "Este campo es requerido" })}
-              bg={inputBg}
-            />
-            <FormErrorMessage>
-              {errors.rol && errors.rol.message}
-            </FormErrorMessage>
-          </FormControl>
+          <InputComponent
+            label="Email"
+            id="email"
+            placeholder="Email"
+            error={errors.email}
+            register={register("email", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <InputComponent
+            label="Contraseña"
+            id="password"
+            type="password"
+            placeholder="Contraseña"
+            error={errors.password}
+            register={register("password", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <InputComponent
+            label="RUT"
+            id="rut"
+            type="text"
+            placeholder="RUT"
+            value={rut}
+            onChange={handleRutChange}
+            error={errors.rut}
+            register={register("rut", { required: "Este campo es requerido" })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <InputComponent
+            label="Nombre"
+            id="nombre"
+            placeholder="Nombre"
+            error={errors.nombre}
+            register={register("nombre", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <InputComponent
+            label="Apellido"
+            id="apellido"
+            placeholder="Apellido"
+            error={errors.apellido}
+            register={register("apellido", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <InputComponent
+            label="Teléfono"
+            id="telefono"
+            placeholder="Teléfono"
+            error={errors.telefono}
+            register={register("telefono", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          />
+          <SelectComponent
+            label="Jornada"
+            id="jornada"
+            placeholder="Selecciona una jornada"
+            error={errors.jornada}
+            register={register("jornada", {
+              required: "Este campo es requerido",
+            })}
+            bg={inputBg}
+            color={textColor}
+          >
+            <option value="diurno">Diurno</option>
+            <option value="vespertino">Vespertino</option>
+            <option value="mixto">Mixto</option>
+          </SelectComponent>
+          <SelectComponent
+            label="Rol"
+            id="rol"
+            placeholder="Selecciona un rol"
+            error={errors.rol}
+            register={register("rol", { required: "Este campo es requerido" })}
+            bg={inputBg}
+            color={textColor}
+          >
+            <option value="vendedor">Vendedor</option>
+            <option value="administrador">Administrador</option>
+          </SelectComponent>
           <Button
             colorScheme="blue"
             type="submit"
