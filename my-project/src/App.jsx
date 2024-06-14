@@ -6,28 +6,26 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, Spinner } from "@chakra-ui/react";
 import Navbar from "./components/Navbar";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
 import Login from "./components/Login";
 import useStore from "./store";
 import theme from "./theme";
-
-const ProtectedRoute = ({ children, roles }) => {
-  const user = useStore((state) => state.user);
-  if (!user || (roles && !roles.includes(user.rol))) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-};
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   const initializeStore = useStore((state) => state.initializeStore);
+  const isLoading = useStore((state) => state.isLoading);
 
   useEffect(() => {
     initializeStore();
   }, [initializeStore]);
+
+  if (isLoading) {
+    return <Spinner size="xl" />;
+  }
 
   return (
     <ChakraProvider theme={theme}>

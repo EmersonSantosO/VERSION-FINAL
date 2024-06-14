@@ -16,16 +16,15 @@ import {
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon, HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 import useStore from "../store";
-import logo from "../assets/logo (2).svg"; // Ajusta la ruta si es necesario
+import logo from "../assets/logo (2).svg";
 
 const Navbar = () => {
+  const user = useStore((state) => state.user);
+  const logout = useStore((state) => state.logout);
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onToggle } = useDisclosure();
   const navigate = useNavigate();
   const location = useLocation();
-
-  const user = useStore((state) => state.user);
-  const logout = useStore((state) => state.logout);
 
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
@@ -67,17 +66,15 @@ const Navbar = () => {
                   </Button>
                 </Link>
               )}
-              {(user.rol === "administrador" || user.rol === "vendedor") && (
-                <Link to="/productos">
-                  <Button
-                    mx="2"
-                    variant="ghost"
-                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                  >
-                    Productos
-                  </Button>
-                </Link>
-              )}
+              <Link to="/productos">
+                <Button
+                  mx="2"
+                  variant="ghost"
+                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                >
+                  Productos
+                </Button>
+              </Link>
               <Button
                 onClick={handleLogout}
                 colorScheme="blue"
@@ -138,18 +135,16 @@ const Navbar = () => {
                   </Button>
                 </Link>
               )}
-              {(user.rol === "administrador" || user.rol === "vendedor") && (
-                <Link to="/productos">
-                  <Button
-                    w="full"
-                    variant="ghost"
-                    onClick={onToggle}
-                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                  >
-                    Productos
-                  </Button>
-                </Link>
-              )}
+              <Link to="/productos">
+                <Button
+                  w="full"
+                  variant="ghost"
+                  onClick={onToggle}
+                  _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+                >
+                  Productos
+                </Button>
+              </Link>
               <Button
                 w="full"
                 onClick={() => {

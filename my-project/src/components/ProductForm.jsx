@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
-import useStore from "../store";
+import { useQueryClient } from "@tanstack/react-query";
 import theme from "../theme";
 
 const MotionBox = motion(Box);
@@ -27,7 +27,7 @@ const ProductForm = () => {
   const [image, setImage] = useState(null);
 
   const navigate = useNavigate();
-  const fetchProducts = useStore((state) => state.fetchProducts);
+  const queryClient = useQueryClient();
   const toast = useToast();
 
   const bgColor = useColorModeValue(
@@ -69,9 +69,9 @@ const ProductForm = () => {
         isClosable: true,
       });
 
-      fetchProducts();
-      navigate("/");
+      queryClient.invalidateQueries(["products"]); // Invalida y refetch la query de productos
       reset();
+      navigate("/productos");
     } catch (error) {
       console.error("Error al crear el producto:", error);
       toast({

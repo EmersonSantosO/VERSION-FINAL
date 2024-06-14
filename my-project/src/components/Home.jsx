@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon, SearchIcon, CloseIcon } from "@chakra-ui/icons";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import useStore from "../store";
 import theme from "../theme";
@@ -35,11 +35,12 @@ const fetchProducts = async ({ queryKey }) => {
 };
 
 const Home = () => {
-  const user = useStore((state) => state.user); // Asegúrate de que user está definido
+  const user = useStore((state) => state.user);
   const deleteProduct = useStore((state) => state.deleteProduct);
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const queryClient = useQueryClient();
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["products", { page: currentPage, search: searchTerm }],
@@ -65,6 +66,7 @@ const Home = () => {
         duration: 3000,
         isClosable: true,
       });
+      queryClient.invalidateQueries(["products"]); // Invalida y refetch la query de productos
     } catch (error) {
       console.error("Error al eliminar producto:", error);
       toast({

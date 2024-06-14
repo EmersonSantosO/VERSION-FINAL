@@ -1,3 +1,4 @@
+// src/components/Admin.jsx
 import React, { useEffect } from "react";
 import {
   Box,
@@ -27,12 +28,9 @@ import theme from "../theme";
 
 const Admin = () => {
   const token = useStore((state) => state.user?.token);
-  const { users, setUsers, isLoading, setLoading } = useStore((state) => ({
-    users: state.users,
-    setUsers: state.setUsers,
-    isLoading: state.isLoading,
-    setLoading: state.setLoading,
-  }));
+  const users = useStore((state) => state.users);
+  const fetchUsers = useStore((state) => state.fetchUsers);
+  const isLoading = useStore((state) => state.isLoading);
   const { register, handleSubmit, reset } = useForm();
   const toast = useToast();
 
@@ -48,38 +46,15 @@ const Admin = () => {
   const inputBg = useColorModeValue("gray.100", "gray.700");
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get("/api/usuarios/", {
-          headers: { Authorization: `Token ${token}` },
-        });
-        setUsers(response.data.results); // Asegúrate de que el formato es correcto
-      } catch (error) {
-        console.error("Error al obtener usuarios:", error);
-        toast({
-          title: "Error",
-          description: "Hubo un error al obtener la lista de usuarios.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
-      fetchUsers();
-    }
-  }, [token, toast, setUsers, setLoading]);
+    fetchUsers();
+  }, [fetchUsers]); // Asegúrate de que fetchUsers es estable
 
   const handleCreateUser = async (data) => {
     try {
-      const response = await axios.post("/api/usuarios/", data, {
+      const response = await axios.post("/usuarios/", data, {
         headers: { Authorization: `Token ${token}` },
       });
-      setUsers((prevUsers) => [...prevUsers, response.data]);
+      fetchUsers(); // Refresca la lista de usuarios después de crear uno nuevo
       toast({
         title: "Usuario Creado",
         description: "El usuario se ha creado correctamente.",
@@ -104,10 +79,10 @@ const Admin = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`/api/usuarios/${userId}/`, {
+      await axios.delete(`/usuarios/${userId}/`, {
         headers: { Authorization: `Token ${token}` },
       });
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      fetchUsers(); // Actualiza la lista después de eliminar
       toast({
         title: "Usuario Eliminado",
         description: "El usuario se ha eliminado correctamente.",
@@ -133,7 +108,6 @@ const Admin = () => {
         Administración
       </Heading>
 
-      {/* Formulario para crear nuevo usuario */}
       <Box
         mb="8"
         p="6"
@@ -227,7 +201,7 @@ const Admin = () => {
               type="submit"
               bg={buttonBg}
               _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
-              isLoading={isLoading} // Mostrar indicador de carga si isLoading es true
+              isLoading={isLoading}
             >
               Crear Usuario
             </Button>
@@ -235,7 +209,6 @@ const Admin = () => {
         </form>
       </Box>
 
-      {/* Lista de usuarios */}
       <Box>
         <Heading as="h3" size="lg" mb="4">
           Lista de Usuarios
