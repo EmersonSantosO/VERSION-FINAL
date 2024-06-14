@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -14,6 +13,10 @@ import Login from "./components/Login";
 import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+// Crear una instancia de QueryClient
+const queryClient = new QueryClient();
 
 function App() {
   const initializeStore = useStore((state) => state.initializeStore);
@@ -29,37 +32,40 @@ function App() {
 
   return (
     <ChakraProvider theme={theme}>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute roles={["administrador"]}>
-                <Admin />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/productos"
-            element={
-              <ProtectedRoute roles={["administrador", "vendedor"]}>
-                <Home /> {/* Reutilizando el componente Home para Productos */}
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute roles={["administrador"]}>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/productos"
+              element={
+                <ProtectedRoute roles={["administrador", "vendedor"]}>
+                  <Home />{" "}
+                  {/* Reutilizando el componente Home para Productos */}
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </QueryClientProvider>
     </ChakraProvider>
   );
 }

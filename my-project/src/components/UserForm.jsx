@@ -9,9 +9,9 @@ import {
   Input,
   useToast,
   useColorModeValue,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
-import { formatRut } from "../utils/formatRut";
 import axios from "axios";
 import theme from "../theme";
 
@@ -23,8 +23,7 @@ const UserForm = ({ onUserCreated }) => {
 
   const onSubmit = async (data) => {
     try {
-      const formattedRut = formatRut(rut);
-      const userData = { ...data, rut: formattedRut };
+      const userData = { ...data, rut };
       const response = await axios.post("/usuarios/", userData);
       toast({
         title: "Usuario creado",
@@ -48,13 +47,18 @@ const UserForm = ({ onUserCreated }) => {
 
   const handleRutChange = (event) => {
     const inputRut = event.target.value;
-    setRut(formatRut(inputRut));
+    setRut(inputRut);
   };
 
   const inputBg = useColorModeValue("gray.100", "gray.700");
 
   return (
-    <Box p="8" bg="white" boxShadow="md" borderRadius="md">
+    <Box
+      p="8"
+      bg={useColorModeValue("white", "gray.800")}
+      boxShadow="md"
+      borderRadius="md"
+    >
       <Heading as="h3" size="lg" mb="4">
         Crear Nuevo Usuario
       </Heading>
@@ -67,6 +71,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("email", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.email && errors.email.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="password" isInvalid={errors.password}>
             <FormLabel>Contraseña</FormLabel>
@@ -75,6 +82,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("password", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.password && errors.password.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="rut" isInvalid={errors.rut}>
             <FormLabel>RUT</FormLabel>
@@ -85,6 +95,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("rut", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.rut && errors.rut.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="nombre" isInvalid={errors.nombre}>
             <FormLabel>Nombre</FormLabel>
@@ -93,6 +106,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("nombre", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.nombre && errors.nombre.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="apellido" isInvalid={errors.apellido}>
             <FormLabel>Apellido</FormLabel>
@@ -101,6 +117,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("apellido", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.apellido && errors.apellido.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="telefono" isInvalid={errors.telefono}>
             <FormLabel>Teléfono</FormLabel>
@@ -109,6 +128,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("telefono", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.telefono && errors.telefono.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="jornada" isInvalid={errors.jornada}>
             <FormLabel>Jornada</FormLabel>
@@ -117,6 +139,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("jornada", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.jornada && errors.jornada.message}
+            </FormErrorMessage>
           </FormControl>
           <FormControl id="rol" isInvalid={errors.rol}>
             <FormLabel>Rol</FormLabel>
@@ -125,6 +150,9 @@ const UserForm = ({ onUserCreated }) => {
               {...register("rol", { required: "Este campo es requerido" })}
               bg={inputBg}
             />
+            <FormErrorMessage>
+              {errors.rol && errors.rol.message}
+            </FormErrorMessage>
           </FormControl>
           <Button
             colorScheme="blue"
