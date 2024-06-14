@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -5,7 +6,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { ChakraProvider, Spinner } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
 import Navbar from "./components/Navbar";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
@@ -14,7 +15,9 @@ import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "react-query";
+import LoadingSpinner from "./components/LoadingSpinner";
 
+// Crear una instancia de QueryClient
 const queryClient = new QueryClient();
 
 function App() {
@@ -26,7 +29,7 @@ function App() {
   }, [initializeStore]);
 
   if (isLoading) {
-    return <Spinner size="xl" />;
+    return <LoadingSpinner />;
   }
 
   return (

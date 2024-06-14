@@ -1,3 +1,4 @@
+// src/components/Home.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -24,6 +25,7 @@ import axios from "axios";
 import useStore from "../store";
 import theme from "../theme";
 import ProductForm from "./ProductForm";
+import LoadingSpinner from "./LoadingSpinner";
 
 const MotionBox = motion(Box);
 const MotionGridItem = motion(GridItem);
@@ -36,7 +38,7 @@ const fetchProducts = async ({ queryKey }) => {
 
 const Home = () => {
   const user = useStore((state) => state.user);
-  const deleteProduct = useStore((state) => state.deleteProduct); // Importar deleteProduct desde el store
+  const deleteProduct = useStore((state) => state.deleteProduct);
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +60,7 @@ const Home = () => {
 
   const handleDelete = async (productId) => {
     try {
-      await deleteProduct(productId); // Llamar a deleteProduct
+      await deleteProduct(productId);
       toast({
         title: "Producto Eliminado",
         description: "El producto se ha eliminado correctamente.",
@@ -137,7 +139,7 @@ const Home = () => {
 
       <Box>
         {isLoading ? (
-          <Spinner size="lg" />
+          <LoadingSpinner />
         ) : error ? (
           <Text>Error al cargar los productos.</Text>
         ) : (
