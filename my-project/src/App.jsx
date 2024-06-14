@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -6,8 +5,9 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, Spinner } from "@chakra-ui/react";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer"; // Importa el footer
 import Admin from "./components/Admin";
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -15,7 +15,6 @@ import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "react-query";
-import LoadingSpinner from "./components/LoadingSpinner";
 
 // Crear una instancia de QueryClient
 const queryClient = new QueryClient();
@@ -29,7 +28,7 @@ function App() {
   }, [initializeStore]);
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <Spinner size="xl" />;
   }
 
   return (
@@ -65,6 +64,7 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <Footer /> {/* Agrega el footer */}
         </Router>
       </QueryClientProvider>
     </ChakraProvider>
