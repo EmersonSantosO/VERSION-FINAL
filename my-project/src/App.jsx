@@ -1,4 +1,4 @@
-// src/App.jsx
+// src/App.js
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -15,6 +15,7 @@ import Login from "./components/Login";
 import Productos from "./components/Productos";
 import Clientes from "./components/Clientes";
 import Ventas from "./components/Ventas";
+import Usuarios from "./components/Usuarios";
 import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -78,6 +79,14 @@ function App() {
               element={
                 <ProtectedRoute roles={["administrador", "vendedor"]}>
                   <Ventas />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/usuarios"
+              element={
+                <ProtectedRoute roles={["administrador"]}>
+                  <Usuarios />
                 </ProtectedRoute>
               }
             />

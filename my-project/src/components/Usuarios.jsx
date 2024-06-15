@@ -22,11 +22,9 @@ import {
   FormControl,
   FormLabel,
 } from "@chakra-ui/react";
-import { useQuery } from "react-query";
-import { getUsers, deleteUser } from "../services/userService";
-import { useNavigate } from "react-router-dom";
-import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import useStore from "../store";
+import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 
 const Usuarios = () => {
   const navigate = useNavigate();
@@ -35,8 +33,9 @@ const Usuarios = () => {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
 
-  const { data: users, refetch } = useQuery("users", getUsers);
-
+  const fetchUsers = useStore((state) => state.fetchUsers);
+  const users = useStore((state) => state.users);
+  const isLoading = useStore((state) => state.isLoading);
   const user = useStore((state) => state.user);
 
   useEffect(() => {
@@ -44,29 +43,30 @@ const Usuarios = () => {
       navigate("/login");
     } else if (user.rol !== "administrador") {
       navigate("/");
+    } else {
+      fetchUsers();
     }
-  }, [user, navigate]);
+  }, [user, navigate, fetchUsers]);
 
   const handleEdit = (user) => {
     setSelectedUser(user);
-    setName(user.name);
+    setName(user.nombre);
     setEmail(user.email);
     onOpen();
   };
 
-  const handleDelete = (userId) => {
-    deleteUser(userId)
-      .then(() => {
-        refetch();
-      })
-      .catch((error) => {
-        console.error("Error al eliminar usuario:", error);
-      });
+  const handleDelete = async (userId) => {
+    try {
+      const deleteUser = useStore.getState().deleteUser;
+      await deleteUser(userId);
+    } catch (error) {
+      console.error("Error al eliminar usuario:", error);
+    }
   };
 
   const handleSave = () => {
     // Aquí podrías enviar la solicitud de actualización al servidor
-    console.log(`Guardar cambios para ${selectedUser.name}`);
+    console.log(`Guardar cambios para ${selectedUser.nombre}`);
     onClose();
   };
 
@@ -93,7 +93,7 @@ const Usuarios = () => {
             {users?.map((user) => (
               <Tr key={user.id}>
                 <Td>{user.id}</Td>
-                <Td>{user.name}</Td>
+                <Td>{user.nombre}</Td>
                 <Td>{user.email}</Td>
                 <Td>
                   <Button
