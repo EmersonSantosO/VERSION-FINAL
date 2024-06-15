@@ -101,6 +101,18 @@ const useStore = create((set) => ({
     }
   },
 
+  addProduct: async (product) => {
+    try {
+      const response = await axios.post("/productos/", product);
+      set((state) => ({
+        products: [...state.products, response.data],
+      }));
+    } catch (error) {
+      console.error("Error al agregar producto:", error);
+      throw error;
+    }
+  },
+
   fetchUsers: async () => {
     set({ usersLoading: true });
     try {
