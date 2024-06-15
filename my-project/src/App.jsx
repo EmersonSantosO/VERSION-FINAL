@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -7,16 +8,18 @@ import {
 } from "react-router-dom";
 import { ChakraProvider, Spinner } from "@chakra-ui/react";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer"; // Importa el footer
+import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Home from "./components/Home";
 import Login from "./components/Login";
+import Productos from "./components/Productos";
+import Clientes from "./components/Clientes";
+import Ventas from "./components/Ventas";
 import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "react-query";
 
-// Crear una instancia de QueryClient
 const queryClient = new QueryClient();
 
 function App() {
@@ -58,13 +61,29 @@ function App() {
               path="/productos"
               element={
                 <ProtectedRoute roles={["administrador", "vendedor"]}>
-                  <Home />
+                  <Productos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clientes"
+              element={
+                <ProtectedRoute roles={["administrador", "vendedor"]}>
+                  <Clientes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ventas"
+              element={
+                <ProtectedRoute roles={["administrador", "vendedor"]}>
+                  <Ventas />
                 </ProtectedRoute>
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <Footer /> {/* Agrega el footer */}
+          <Footer />
         </Router>
       </QueryClientProvider>
     </ChakraProvider>

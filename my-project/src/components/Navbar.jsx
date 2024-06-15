@@ -47,34 +47,48 @@ const Navbar = () => {
       >
         <Flex alignItems="center">
           <Image src={logo} alt="Logo" boxSize="50px" mr="2" />
-          <Box fontWeight="bold">
-            <Link to="/">Aplicación Bazar</Link>
+          <Box fontWeight="bold" cursor="pointer" onClick={() => navigate("/")}>
+            Aplicación Bazar
           </Box>
         </Flex>
         <Spacer />
         <HStack display={{ base: "none", md: "flex" }}>
           {user ? (
             <>
+              <Button
+                mx="2"
+                variant="ghost"
+                onClick={() => navigate("/productos")}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Productos
+              </Button>
+              <Button
+                mx="2"
+                variant="ghost"
+                onClick={() => navigate("/clientes")}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Clientes
+              </Button>
+              <Button
+                mx="2"
+                variant="ghost"
+                onClick={() => navigate("/ventas")}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Ventas
+              </Button>
               {user.rol === "administrador" && (
-                <Link to="/admin">
-                  <Button
-                    mx="2"
-                    variant="ghost"
-                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                  >
-                    Administración
-                  </Button>
-                </Link>
-              )}
-              <Link to="/productos">
                 <Button
                   mx="2"
                   variant="ghost"
+                  onClick={() => navigate("/usuarios")}
                   _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
                 >
-                  Productos
+                  Usuarios
                 </Button>
-              </Link>
+              )}
               <Button
                 onClick={handleLogout}
                 colorScheme="blue"
@@ -89,17 +103,16 @@ const Navbar = () => {
             </>
           ) : (
             location.pathname !== "/login" && (
-              <Link to="/login">
-                <Button
-                  colorScheme="blue"
-                  bg={buttonBg}
-                  _hover={{
-                    bg: useColorModeValue("blue.600", "blue.200"),
-                  }}
-                >
-                  Iniciar sesión
-                </Button>
-              </Link>
+              <Button
+                onClick={() => navigate("/login")}
+                colorScheme="blue"
+                bg={buttonBg}
+                _hover={{
+                  bg: useColorModeValue("blue.600", "blue.200"),
+                }}
+              >
+                Iniciar sesión
+              </Button>
             )
           )}
           <Button onClick={toggleColorMode} ml="4" variant="ghost">
@@ -123,28 +136,52 @@ const Navbar = () => {
         >
           {user ? (
             <>
+              <Button
+                w="full"
+                variant="ghost"
+                onClick={() => {
+                  navigate("/productos");
+                  onToggle();
+                }}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Productos
+              </Button>
+              <Button
+                w="full"
+                variant="ghost"
+                onClick={() => {
+                  navigate("/clientes");
+                  onToggle();
+                }}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Clientes
+              </Button>
+              <Button
+                w="full"
+                variant="ghost"
+                onClick={() => {
+                  navigate("/ventas");
+                  onToggle();
+                }}
+                _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
+              >
+                Ventas
+              </Button>
               {user.rol === "administrador" && (
-                <Link to="/admin">
-                  <Button
-                    w="full"
-                    variant="ghost"
-                    onClick={onToggle}
-                    _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
-                  >
-                    Administración
-                  </Button>
-                </Link>
-              )}
-              <Link to="/productos">
                 <Button
                   w="full"
                   variant="ghost"
-                  onClick={onToggle}
+                  onClick={() => {
+                    navigate("/usuarios");
+                    onToggle();
+                  }}
                   _hover={{ bg: useColorModeValue("gray.200", "gray.700") }}
                 >
-                  Productos
+                  Usuarios
                 </Button>
-              </Link>
+              )}
               <Button
                 w="full"
                 onClick={() => {
@@ -162,19 +199,20 @@ const Navbar = () => {
             </>
           ) : (
             location.pathname !== "/login" && (
-              <Link to="/login">
-                <Button
-                  w="full"
-                  colorScheme="blue"
-                  bg={buttonBg}
-                  onClick={onToggle}
-                  _hover={{
-                    bg: useColorModeValue("blue.600", "blue.200"),
-                  }}
-                >
-                  Iniciar sesión
-                </Button>
-              </Link>
+              <Button
+                w="full"
+                colorScheme="blue"
+                bg={buttonBg}
+                onClick={() => {
+                  navigate("/login");
+                  onToggle();
+                }}
+                _hover={{
+                  bg: useColorModeValue("blue.600", "blue.200"),
+                }}
+              >
+                Iniciar sesión
+              </Button>
             )
           )}
           <Button onClick={toggleColorMode} variant="ghost">

@@ -1,3 +1,4 @@
+// src/store.js
 import { create } from "zustand";
 import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
@@ -11,6 +12,8 @@ const useStore = create((set) => ({
   usersLoading: false,
   products: [],
   users: [],
+  ventas: [],
+  clientes: [],
   navbarNeedsUpdate: false,
 
   initializeStore: async () => {
@@ -77,6 +80,8 @@ const useStore = create((set) => ({
       isLoggedIn: false,
       products: [],
       users: [],
+      ventas: [],
+      clientes: [],
       navbarNeedsUpdate: true,
     });
   },
@@ -129,6 +134,34 @@ const useStore = create((set) => ({
       console.error("Error al eliminar producto:", error);
       throw error;
     }
+  },
+
+  // Nuevas acciones para ventas y clientes
+  addVenta: (venta) => {
+    set((state) => ({
+      ventas: [...state.ventas, { ...venta, id: state.ventas.length + 1 }],
+    }));
+  },
+
+  deleteVenta: (ventaId) => {
+    set((state) => ({
+      ventas: state.ventas.filter((venta) => venta.id !== ventaId),
+    }));
+  },
+
+  addCliente: (cliente) => {
+    set((state) => ({
+      clientes: [
+        ...state.clientes,
+        { ...cliente, id: state.clientes.length + 1 },
+      ],
+    }));
+  },
+
+  deleteCliente: (clienteId) => {
+    set((state) => ({
+      clientes: state.clientes.filter((cliente) => cliente.id !== clienteId),
+    }));
   },
 }));
 
