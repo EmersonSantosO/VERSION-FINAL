@@ -1,4 +1,4 @@
-// src/components/AuthNavigation.jsx
+// AuthNavigation.jsx - Simplificado
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import useStore from "../store";
@@ -11,7 +11,9 @@ import Ventas from "./Ventas";
 import Usuarios from "./Usuarios";
 
 const AuthNavigation = () => {
-  const user = useStore((state) => state.user);
+  const { user } = useStore((state) => ({ user: state.user }));
+
+  const isAllowed = (allowedRoles) => user && allowedRoles.includes(user.rol);
 
   return (
     <Routes>
@@ -23,7 +25,7 @@ const AuthNavigation = () => {
       <Route
         path="/admin"
         element={
-          user && user.rol === "administrador" ? (
+          isAllowed(["administrador"]) ? (
             <Admin />
           ) : (
             <Navigate to="/login" replace />
@@ -33,7 +35,7 @@ const AuthNavigation = () => {
       <Route
         path="/productos"
         element={
-          user && (user.rol === "administrador" || user.rol === "vendedor") ? (
+          isAllowed(["administrador", "vendedor"]) ? (
             <Productos />
           ) : (
             <Navigate to="/login" replace />
@@ -43,7 +45,7 @@ const AuthNavigation = () => {
       <Route
         path="/clientes"
         element={
-          user && (user.rol === "administrador" || user.rol === "vendedor") ? (
+          isAllowed(["administrador", "vendedor"]) ? (
             <Clientes />
           ) : (
             <Navigate to="/login" replace />
@@ -53,7 +55,7 @@ const AuthNavigation = () => {
       <Route
         path="/ventas"
         element={
-          user && (user.rol === "administrador" || user.rol === "vendedor") ? (
+          isAllowed(["administrador", "vendedor"]) ? (
             <Ventas />
           ) : (
             <Navigate to="/login" replace />
@@ -63,7 +65,7 @@ const AuthNavigation = () => {
       <Route
         path="/usuarios"
         element={
-          user && user.rol === "administrador" ? (
+          isAllowed(["administrador"]) ? (
             <Usuarios />
           ) : (
             <Navigate to="/login" replace />

@@ -1,4 +1,3 @@
-// src/apiConfig.js
 import axios from "axios";
 
 export const API_BASE_URL = "http://localhost:8000/api/";
@@ -13,9 +12,7 @@ axios.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 axios.interceptors.response.use(

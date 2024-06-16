@@ -1,4 +1,3 @@
-// src/store.js
 import { create } from "zustand";
 import axios from "axios";
 import { API_BASE_URL } from "./apiConfig";
@@ -8,7 +7,6 @@ axios.defaults.baseURL = API_BASE_URL;
 const useStore = create((set) => ({
   user: null,
   isLoggedIn: false,
-  isLoading: false,
   usersLoading: false,
   products: [],
   users: [],
@@ -20,26 +18,21 @@ const useStore = create((set) => ({
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Token ${token}`;
-      set({ isLoading: true });
+      set({ isLoading: true }); // Establece isLoading en true al inicio
       try {
         const userResponse = await axios.get("/usuarios/me/");
-        set({
-          user: userResponse.data,
-          isLoggedIn: true,
-          isLoading: false,
-        });
+        set({ user: userResponse.data, isLoggedIn: true });
       } catch (error) {
         console.error("Error loading user data:", error);
         localStorage.removeItem("token");
-        set({ isLoggedIn: false, isLoading: false });
+        set({ isLoggedIn: false });
+      } finally {
+        set({ isLoading: false }); // Establece isLoading en false al final
       }
-    } else {
-      set({ isLoading: false });
     }
   },
-
   login: async (username, password, toast, navigate) => {
-    set({ isLoading: true });
+    set({ isLoading: true }); // Comienza la carga
     try {
       const response = await axios.post("/api-token-auth/", {
         username,
@@ -50,17 +43,20 @@ const useStore = create((set) => ({
       axios.defaults.headers.common["Authorization"] = `Token ${token}`;
 
       const userResponse = await axios.get("/usuarios/me/");
+
+      // Actualiza el estado con la información del usuario
       set({
         user: userResponse.data,
         isLoggedIn: true,
-        isLoading: false,
         navbarNeedsUpdate: true,
+        isLoading: false, // Termina la carga después de obtener la información del usuario
       });
 
-      navigate("/"); // Redirecciona después de iniciar sesión
+      // Redirige después de actualizar el estado
+      navigate("/");
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
-      set({ isLoading: false });
+      set({ isLoading: false }); // Termina la carga en caso de error
       toast({
         title: "Error de inicio de sesión",
         description:
@@ -86,30 +82,19 @@ const useStore = create((set) => ({
     });
   },
 
+  // Dentro de useStore
+  // En useStore.js
   fetchProducts: async (page = 1, search = "") => {
-    set({ isLoading: true });
     try {
-      const params = { page, search };
-      const response = await axios.get("/productos/", { params });
-      set({
-        products: response.data.results || [],
-        isLoading: false,
+      const response = await axios.get("/productos/", {
+        params: { page, search },
       });
+      console.log("Respuesta del backend:", response);
+      set({ products: response.data.results || [] });
+      return Promise.resolve(response.data.results); // Devuelve una promesa
     } catch (error) {
       console.error("Error al obtener productos:", error);
-      set({ isLoading: false });
-    }
-  },
-
-  addProduct: async (product) => {
-    try {
-      const response = await axios.post("/productos/", product);
-      set((state) => ({
-        products: [...state.products, response.data],
-      }));
-    } catch (error) {
-      console.error("Error al agregar producto:", error);
-      throw error;
+      return Promise.reject(error); // Rechaza la promesa en caso de error
     }
   },
 
@@ -148,7 +133,6 @@ const useStore = create((set) => ({
     }
   },
 
-  // Nuevas acciones para ventas y clientes
   addVenta: (venta) => {
     set((state) => ({
       ventas: [...state.ventas, { ...venta, id: state.ventas.length + 1 }],

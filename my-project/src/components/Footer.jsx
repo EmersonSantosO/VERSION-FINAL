@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Flex, Text, Image, useColorModeValue } from "@chakra-ui/react";
-import logoFooter from "../assets/logoFooter.svg"; // Asegúrate de que la ruta sea correcta
+import logoFooter from "../assets/logoFooter.svg";
 
 const Footer = () => {
   const bgColor = useColorModeValue("gray.100", "gray.900");

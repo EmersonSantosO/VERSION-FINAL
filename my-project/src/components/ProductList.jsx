@@ -1,64 +1,52 @@
-// src/components/ProductList.jsx
 import React from "react";
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  TableContainer,
-} from "@chakra-ui/react";
+import { Box, Spinner, Image, Text, Button } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
-import useStore from "../store";
 
-const ProductList = () => {
-  const products = useStore((state) => state.products);
-  const deleteProduct = useStore((state) => state.deleteProduct);
+const ProductList = ({ products, isLoading, handleDelete }) => {
+  console.log("Productos en ProductList:", products);
+  if (isLoading) {
+    return <Spinner size="lg" />;
+  }
 
-  return (
-    <Box mt="4">
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>ID</Th>
-              <Th>Nombre</Th>
-              <Th>Descripción</Th>
-              <Th>Código</Th>
-              <Th>Tipo</Th>
-              <Th>Precio</Th>
-              <Th>Acciones</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {products.map((product) => (
-              <Tr key={product.id}>
-                <Td>{product.id}</Td>
-                <Td>{product.nombre}</Td>
-                <Td>{product.descripcion}</Td>
-                <Td>{product.codigo}</Td>
-                <Td>{product.tipo}</Td>
-                <Td>{product.precio}</Td>
-                <Td>
-                  <Button
-                    leftIcon={<DeleteIcon />}
-                    colorScheme="red"
-                    variant="ghost"
-                    onClick={() => deleteProduct(product.id)}
-                  >
-                    Eliminar
-                  </Button>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
-    </Box>
-  );
+  // Renderizado condicional más explícito
+  if (products && products.length > 0) {
+    return (
+      <Box>
+        {products.map(
+          (
+            product // Corrección: Return fuera de las llaves
+          ) => (
+            <Box
+              key={product.id}
+              borderWidth="1px"
+              borderRadius="md"
+              p="4"
+              mb="4"
+            >
+              <Image src={product.imagen} alt={product.nombre} mb="4" />
+              <Text fontWeight="bold">{product.nombre}</Text>
+              <Text>{product.descripcion}</Text>
+              <Text>Código: {product.codigo}</Text>
+              <Text>Tipo: {product.tipo}</Text>
+              <Text>Precio: ${product.precio}</Text>
+              <Button
+                leftIcon={<DeleteIcon />}
+                colorScheme="red"
+                onClick={() => handleDelete(product.id)}
+                mt="4"
+              >
+                Eliminar
+              </Button>
+            </Box>
+          )
+        )}
+      </Box>
+    );
+  } else if (products && products.length === 0) {
+    return <Text>No hay productos disponibles.</Text>;
+  } else {
+    return <Text>Cargando productos...</Text>; // Mensaje mientras products es undefined
+  }
 };
 
 export default ProductList;

@@ -1,4 +1,3 @@
-// src/components/ClienteList.jsx
 import React from "react";
 import { Table, Tbody, Td, Th, Thead, Tr, Button } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";

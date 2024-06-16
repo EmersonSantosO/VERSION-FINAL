@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -27,6 +26,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Llamadas a useColorModeValue fuera del condicional
   const bgColor = useColorModeValue("gray.100", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
   const buttonBg = useColorModeValue("blue.500", "blue.300");

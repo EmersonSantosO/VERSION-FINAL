@@ -1,3 +1,4 @@
+// Admin.jsx - Simplificado
 import React, { useEffect } from "react";
 import { Box, Heading, Spinner, useColorModeValue } from "@chakra-ui/react";
 import useStore from "../store";
@@ -7,14 +8,15 @@ import UserForm from "./UserForm";
 import theme from "../theme";
 
 const Admin = () => {
-  const { users, isLoading } = useStore((state) => ({
+  const { users, isLoading, user, fetchUsers } = useStore((state) => ({
     users: state.users,
     isLoading: state.usersLoading,
+    user: state.user,
+    fetchUsers: state.fetchUsers,
   }));
-  const user = useStore((state) => state.user);
-  const fetchUsers = useStore((state) => state.fetchUsers);
-  const { handleDelete } = UserActions({ user });
+  const { handleDelete } = UserActions();
 
+  // ... (Estilos con useColorModeValue) ...
   const bgColor = useColorModeValue(
     theme.colors.background.light,
     theme.colors.background.dark
@@ -29,10 +31,6 @@ const Admin = () => {
       fetchUsers();
     }
   }, [user, fetchUsers]);
-
-  const handleUserCreated = (newUser) => {
-    fetchUsers();
-  };
 
   if (user?.rol !== "administrador") {
     return (
@@ -49,7 +47,7 @@ const Admin = () => {
       <Heading as="h1" size="xl" mb="8">
         Gestión de Usuarios
       </Heading>
-      <UserForm onUserCreated={handleUserCreated} />
+      <UserForm />
       {isLoading ? (
         <Spinner size="lg" />
       ) : (

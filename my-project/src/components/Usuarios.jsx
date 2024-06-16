@@ -1,15 +1,17 @@
-// src/components/Usuarios.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Button,
+  Heading,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  useColorModeValue,
+  useToast,
+  Spinner,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -18,97 +20,142 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Input,
-  FormControl,
-  FormLabel,
 } from "@chakra-ui/react";
+import { DeleteIcon, AddIcon } from "@chakra-ui/icons";
 import useStore from "../store";
-import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
-import { useNavigate } from "react-router-dom";
+import theme from "../theme";
+import UserForm from "./UserForm";
 
 const Usuarios = () => {
-  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedUser, setSelectedUser] = React.useState(null);
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-
+  const [selectedUser, setSelectedUser] = useState(null);
   const fetchUsers = useStore((state) => state.fetchUsers);
   const users = useStore((state) => state.users);
-  const isLoading = useStore((state) => state.isLoading);
+  const isLoading = useStore((state) => state.usersLoading);
   const user = useStore((state) => state.user);
+  const toast = useToast();
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    } else if (user.rol !== "administrador") {
-      navigate("/");
-    } else {
+    if (user?.rol === "administrador") {
       fetchUsers();
     }
-  }, [user, navigate, fetchUsers]);
-
-  const handleEdit = (user) => {
-    setSelectedUser(user);
-    setName(user.nombre);
-    setEmail(user.email);
-    onOpen();
-  };
+  }, [user, fetchUsers]);
 
   const handleDelete = async (userId) => {
     try {
       const deleteUser = useStore.getState().deleteUser;
       await deleteUser(userId);
+      toast({
+        title: "Usuario Eliminado",
+        description: "El usuario se ha eliminado correctamente.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchUsers();
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un error al eliminar el usuario.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
-  const handleSave = () => {
-    // Aquí podrías enviar la solicitud de actualización al servidor
-    console.log(`Guardar cambios para ${selectedUser.nombre}`);
-    onClose();
-  };
+  if (user?.rol !== "administrador") {
+    return (
+      <Box
+        p="8"
+        bg={useColorModeValue(
+          theme.colors.background.light,
+          theme.colors.background.dark
+        )}
+        color={useColorModeValue(
+          theme.colors.text.light,
+          theme.colors.text.dark
+        )}
+      >
+        <Heading as="h2" size="lg" mb="4">
+          No tienes permisos para acceder a esta página.
+        </Heading>
+      </Box>
+    );
+  }
 
   return (
-    <Box p={5}>
-      <Button
-        mb={4}
-        colorScheme="blue"
-        onClick={() => navigate("/usuarios/nuevo")}
-      >
+    <Box
+      p="8"
+      bg={useColorModeValue(
+        theme.colors.background.light,
+        theme.colors.background.dark
+      )}
+      color={useColorModeValue(theme.colors.text.light, theme.colors.text.dark)}
+    >
+      <Heading as="h1" size="xl" mb="8">
+        Gestión de Usuarios
+      </Heading>
+      <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={onOpen} mb="8">
         Nuevo Usuario
       </Button>
-      <TableContainer>
-        <Table variant="simple">
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          onClose();
+          setSelectedUser(null);
+        }}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {selectedUser ? "Editar Usuario" : "Nuevo Usuario"}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <UserForm user={selectedUser} onClose={onClose} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      {isLoading ? (
+        <Spinner size="lg" />
+      ) : (
+        <Table
+          variant="simple"
+          size="sm"
+          bg={useColorModeValue("gray.100", "gray.700")}
+        >
           <Thead>
             <Tr>
               <Th>ID</Th>
-              <Th>Nombre</Th>
               <Th>Email</Th>
+              <Th>RUT</Th>
+              <Th>Nombre</Th>
+              <Th>Apellido</Th>
+              <Th>Teléfono</Th>
+              <Th>Jornada</Th>
+              <Th>Rol</Th>
               <Th>Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {users?.map((user) => (
+            {users.map((user) => (
               <Tr key={user.id}>
                 <Td>{user.id}</Td>
-                <Td>{user.nombre}</Td>
                 <Td>{user.email}</Td>
+                <Td>{user.rut}</Td>
+                <Td>{user.nombre}</Td>
+                <Td>{user.apellido}</Td>
+                <Td>{user.telefono}</Td>
+                <Td>{user.jornada}</Td>
+                <Td>{user.rol}</Td>
                 <Td>
                   <Button
-                    onClick={() => handleEdit(user)}
-                    leftIcon={<EditIcon />}
-                    colorScheme="teal"
-                    variant="ghost"
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(user.id)}
                     leftIcon={<DeleteIcon />}
                     colorScheme="red"
-                    variant="ghost"
+                    variant="solid"
+                    onClick={() => handleDelete(user.id)}
                   >
                     Eliminar
                   </Button>
@@ -117,35 +164,6 @@ const Usuarios = () => {
             ))}
           </Tbody>
         </Table>
-      </TableContainer>
-
-      {selectedUser && (
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Editar Usuario</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl>
-                <FormLabel>Nombre</FormLabel>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
-              </FormControl>
-              <FormControl mt={4}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </FormControl>
-            </ModalBody>
-            <ModalFooter>
-              <Button colorScheme="blue" mr={3} onClick={handleSave}>
-                Guardar
-              </Button>
-              <Button onClick={onClose}>Cancelar</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
       )}
     </Box>
   );

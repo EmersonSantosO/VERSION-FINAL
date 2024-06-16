@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
   VStack,
-  Heading,
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -13,31 +12,56 @@ import theme from "../theme";
 import { formatRut } from "../utils/formatRut";
 import InputComponent from "./common/InputComponent";
 import SelectComponent from "./common/SelectComponent";
+import useStore from "../store";
 
-const UserForm = ({ onUserCreated }) => {
-  const { register, handleSubmit, reset, formState } = useForm();
+const UserForm = ({ user, onClose }) => {
+  const { register, handleSubmit, reset, formState, setValue } = useForm();
   const { errors, isSubmitting } = formState;
-  const [rut, setRut] = useState("");
+  const [rut, setRut] = useState(user?.rut || "");
   const toast = useToast();
+  const fetchUsers = useStore((state) => state.fetchUsers);
+
+  useEffect(() => {
+    if (user) {
+      setValue("email", user.email);
+      setValue("nombre", user.nombre);
+      setValue("apellido", user.apellido);
+      setValue("telefono", user.telefono);
+      setValue("jornada", user.jornada);
+      setValue("rol", user.rol);
+    }
+  }, [user, setValue]);
 
   const onSubmit = async (data) => {
     try {
       const userData = { ...data, rut };
-      const response = await axios.post("/usuarios/", userData);
-      toast({
-        title: "Usuario creado",
-        description: "El usuario se ha creado correctamente.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+      if (user) {
+        await axios.put(`/usuarios/${user.id}/`, userData);
+        toast({
+          title: "Usuario actualizado",
+          description: "El usuario se ha actualizado correctamente.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        await axios.post("/usuarios/", userData);
+        toast({
+          title: "Usuario creado",
+          description: "El usuario se ha creado correctamente.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
       reset();
-      setRut(""); // Resetea el campo RUT
-      onUserCreated(response.data);
+      setRut("");
+      fetchUsers();
+      onClose();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Hubo un error al crear el usuario.",
+        description: "Hubo un error al crear/actualizar el usuario.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -64,9 +88,6 @@ const UserForm = ({ onUserCreated }) => {
       width="400px"
       mx="auto"
     >
-      <Heading as="h3" size="lg" mb="4" color={textColor}>
-        Crear Nuevo Usuario
-      </Heading>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} align="stretch">
           <InputComponent
@@ -80,18 +101,20 @@ const UserForm = ({ onUserCreated }) => {
             bg={inputBg}
             color={textColor}
           />
-          <InputComponent
-            label="Contraseña"
-            id="password"
-            type="password"
-            placeholder="Contraseña"
-            error={errors.password}
-            register={register("password", {
-              required: "Este campo es requerido",
-            })}
-            bg={inputBg}
-            color={textColor}
-          />
+          {!user && (
+            <InputComponent
+              label="Contraseña"
+              id="password"
+              type="password"
+              placeholder="Contraseña"
+              error={errors.password}
+              register={register("password", {
+                required: "Este campo es requerido",
+              })}
+              bg={inputBg}
+              color={textColor}
+            />
+          )}
           <InputComponent
             label="RUT"
             id="rut"
@@ -170,7 +193,7 @@ const UserForm = ({ onUserCreated }) => {
             isLoading={isSubmitting}
             width="full"
           >
-            Crear Usuario
+            {user ? "Guardar Cambios" : "Crear Usuario"}
           </Button>
         </VStack>
       </form>

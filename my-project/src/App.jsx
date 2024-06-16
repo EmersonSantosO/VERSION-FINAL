@@ -1,12 +1,13 @@
-// src/App.js
 import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
-  Route,
   Routes,
+  Route,
   Navigate,
 } from "react-router-dom";
 import { ChakraProvider, Spinner } from "@chakra-ui/react";
+import { QueryClient, QueryClientProvider } from "react-query";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
@@ -19,13 +20,11 @@ import Usuarios from "./components/Usuarios";
 import useStore from "./store";
 import theme from "./theme";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();
 
 function App() {
-  const initializeStore = useStore((state) => state.initializeStore);
-  const isLoading = useStore((state) => state.isLoading);
+  const { initializeStore, isLoading } = useStore(); // Desestructuración
 
   useEffect(() => {
     initializeStore();
@@ -41,6 +40,7 @@ function App() {
         <Router>
           <Navbar />
           <Routes>
+            {/* Rutas protegidas */}
             <Route
               path="/"
               element={
@@ -49,7 +49,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/login" element={<Login />} />
             <Route
               path="/admin"
               element={
@@ -90,6 +89,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Ruta de login */}
+            <Route path="/login" element={<Login />} />
+            {/* Ruta por defecto */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Footer />

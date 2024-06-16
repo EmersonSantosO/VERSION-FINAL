@@ -1,4 +1,3 @@
-// src/components/VentaForm.jsx
 import React from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -17,6 +16,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import useStore from "../store";
 
@@ -25,6 +25,7 @@ const VentaForm = ({ isOpen, onClose }) => {
   const { errors, isSubmitting } = formState;
   const toast = useToast();
   const addVenta = useStore((state) => state.addVenta);
+  const products = useStore((state) => state.products); // Asume que ya tienes los productos en el estado local
 
   const createVenta = (data) => {
     addVenta(data);
@@ -58,7 +59,11 @@ const VentaForm = ({ isOpen, onClose }) => {
                       required: "Este campo es requerido",
                     })}
                   >
-                    {/* Agrega tus opciones de productos aquí */}
+                    {products.map((product) => (
+                      <option key={product.id} value={product.nombre}>
+                        {product.nombre}
+                      </option>
+                    ))}
                   </Select>
                   <FormErrorMessage>
                     {errors.producto && errors.producto.message}

@@ -1,4 +1,3 @@
-// src/components/VentaList.jsx
 import React from "react";
 import {
   Box,
@@ -44,7 +43,7 @@ const VentaList = () => {
               <Td>{venta.producto}</Td>
               <Td>{venta.cantidad}</Td>
               <Td>{venta.total}</Td>
-              <Td>{venta.fecha}</Td>
+              <Td>{new Date().toLocaleDateString()}</Td>
             </Tr>
           ))}
         </Tbody>

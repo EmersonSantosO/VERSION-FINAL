@@ -1,5 +1,4 @@
-// src/components/ClienteForm.jsx
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import {
   Box,
@@ -8,10 +7,7 @@ import {
   FormLabel,
   Input,
   VStack,
-  Heading,
-  useColorModeValue,
   useToast,
-  FormErrorMessage,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -19,25 +15,15 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import useStore from "../store";
-import theme from "../theme";
 
 const ClienteForm = ({ isOpen, onClose }) => {
   const { register, handleSubmit, reset, formState } = useForm();
   const { errors, isSubmitting } = formState;
   const toast = useToast();
   const addCliente = useStore((state) => state.addCliente);
-
-  const bgColor = useColorModeValue(
-    theme.colors.background.light,
-    theme.colors.background.dark
-  );
-  const textColor = useColorModeValue(
-    theme.colors.text.light,
-    theme.colors.text.dark
-  );
-  const buttonBg = useColorModeValue("brand.500", "brand.200");
 
   const createCliente = async (data) => {
     try {
@@ -70,58 +56,90 @@ const ClienteForm = ({ isOpen, onClose }) => {
         <ModalHeader>Nuevo Cliente</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Box p="8" bg={bgColor} color={textColor}>
+          <Box p="8">
             <form onSubmit={handleSubmit(createCliente)}>
               <VStack spacing={4} align="stretch">
-                <InputComponent
-                  label="Email"
-                  id="email"
-                  placeholder="Email del cliente"
-                  error={errors.email}
-                  register={register("email", {
-                    required: "Este campo es requerido",
-                  })}
-                />
-                <InputComponent
-                  label="Nombre"
-                  id="nombre"
-                  placeholder="Nombre del cliente"
-                  error={errors.nombre}
-                  register={register("nombre")}
-                />
-                <InputComponent
-                  label="Apellido"
-                  id="apellido"
-                  placeholder="Apellido del cliente"
-                  error={errors.apellido}
-                  register={register("apellido")}
-                />
-                <InputComponent
-                  label="RUT"
-                  id="rut"
-                  placeholder="RUT del cliente"
-                  error={errors.rut}
-                  register={register("rut")}
-                />
-                <InputComponent
-                  label="Teléfono"
-                  id="telefono"
-                  placeholder="Teléfono del cliente"
-                  error={errors.telefono}
-                  register={register("telefono")}
-                />
-                <InputComponent
-                  label="Dirección"
-                  id="direccion"
-                  placeholder="Dirección del cliente"
-                  error={errors.direccion}
-                  register={register("direccion")}
-                />
+                <FormControl isInvalid={errors.email}>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    id="email"
+                    placeholder="Email del cliente"
+                    {...register("email", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.email && errors.email.message}
+                  </FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={errors.nombre}>
+                  <FormLabel>Nombre</FormLabel>
+                  <Input
+                    id="nombre"
+                    placeholder="Nombre del cliente"
+                    {...register("nombre", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.nombre && errors.nombre.message}
+                  </FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={errors.apellido}>
+                  <FormLabel>Apellido</FormLabel>
+                  <Input
+                    id="apellido"
+                    placeholder="Apellido del cliente"
+                    {...register("apellido", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.apellido && errors.apellido.message}
+                  </FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={errors.rut}>
+                  <FormLabel>RUT</FormLabel>
+                  <Input
+                    id="rut"
+                    placeholder="RUT del cliente"
+                    {...register("rut", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.rut && errors.rut.message}
+                  </FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={errors.telefono}>
+                  <FormLabel>Teléfono</FormLabel>
+                  <Input
+                    id="telefono"
+                    placeholder="Teléfono del cliente"
+                    {...register("telefono", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.telefono && errors.telefono.message}
+                  </FormErrorMessage>
+                </FormControl>
+                <FormControl isInvalid={errors.direccion}>
+                  <FormLabel>Dirección</FormLabel>
+                  <Input
+                    id="direccion"
+                    placeholder="Dirección del cliente"
+                    {...register("direccion", {
+                      required: "Este campo es requerido",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.direccion && errors.direccion.message}
+                  </FormErrorMessage>
+                </FormControl>
                 <Button
                   colorScheme="blue"
                   type="submit"
-                  bg={buttonBg}
-                  _hover={{ bg: useColorModeValue("brand.600", "brand.300") }}
                   isLoading={isSubmitting}
                 >
                   Guardar
@@ -134,20 +152,5 @@ const ClienteForm = ({ isOpen, onClose }) => {
     </Modal>
   );
 };
-
-const InputComponent = ({
-  label,
-  id,
-  placeholder,
-  error,
-  register,
-  ...rest
-}) => (
-  <FormControl isInvalid={error}>
-    <FormLabel htmlFor={id}>{label}:</FormLabel>
-    <Input id={id} placeholder={placeholder} {...register} {...rest} />
-    <FormErrorMessage>{error && error.message}</FormErrorMessage>
-  </FormControl>
-);
 
 export default ClienteForm;
