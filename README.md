@@ -34,42 +34,42 @@ Python y pip instalados para el backend.
 Backend
 Clonar el repositorio:
 
-bash
-Copiar código
+bash:
+
 git clone https://github.com/tu-usuario/aplicacion-bazar.git
 Navegar a la rama Version3.0:
 
-bash
-Copiar código
+bash:
+
 cd aplicacion-bazar
 git checkout Version3.0
 Navegar al directorio del backend e instalar dependencias:
 
-bash
-Copiar código
+bash:
+
 cd backend
 pip install -r requirements.txt
 Aplicar las migraciones de la base de datos:
 
-bash
-Copiar código
+bash:
+
 python manage.py migrate
 Ejecutar el servidor de desarrollo:
 
-bash
-Copiar código
+bash:
+
 python manage.py runserver
 Frontend
 Navegar al directorio del frontend e instalar dependencias:
 
-bash
-Copiar código
+bash:
+
 cd frontend
 npm install
 Ejecutar el servidor de desarrollo:
 
 bash
-Copiar código
+
 npm run dev
 📜 Scripts Disponibles
 En el directorio del frontend, puedes ejecutar los siguientes scripts:
