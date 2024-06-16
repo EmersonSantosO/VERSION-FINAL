@@ -11,12 +11,11 @@ Clonar el repositorio:
 bash:
 
 git clone https://github.com/tu-usuario/aplicacion-bazar.git
-Navegar a la rama Version3.0:
 
 bash:
 
 cd aplicacion-bazar
-git checkout Version3.0
+git checkout VERSION-FINAL
 Navegar al directorio del backend e instalar dependencias:
 
 bash:
