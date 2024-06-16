@@ -9,7 +9,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "email",
-            "rut",  # Agrega el campo rut aquí
+            "rut",
             "nombre",
             "apellido",
             "telefono",
@@ -25,7 +25,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         fields = [
             "email",
             "password",
-            "rut",  # Agrega el campo rut aquí
+            "rut",
             "nombre",
             "apellido",
             "telefono",

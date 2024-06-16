@@ -1,11 +1,11 @@
 // src/utils/formatRut.js
 
 export function formatRut(rut) {
-  const cleanRut = rut.replace(/[^\dkK]/g, ""); // Elimina cualquier carácter que no sea un número o 'k'/'K'
+  const cleanRut = rut.replace(/[^\dkK]/g, "");
 
   if (cleanRut.length <= 1) return cleanRut;
 
-  let result = cleanRut.slice(-1); // Start with the last digit/letter (the verifier)
+  let result = cleanRut.slice(-1);
   let counter = 0;
 
   for (let i = cleanRut.length - 2; i >= 0; i--) {

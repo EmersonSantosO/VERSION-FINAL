@@ -18,7 +18,7 @@ const useStore = create((set) => ({
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Token ${token}`;
-      set({ isLoading: true }); // Establece isLoading en true al inicio
+      set({ isLoading: true });
       try {
         const userResponse = await axios.get("/usuarios/me/");
         set({ user: userResponse.data, isLoggedIn: true });
@@ -27,12 +27,12 @@ const useStore = create((set) => ({
         localStorage.removeItem("token");
         set({ isLoggedIn: false });
       } finally {
-        set({ isLoading: false }); // Establece isLoading en false al final
+        set({ isLoading: false });
       }
     }
   },
   login: async (username, password, toast, navigate) => {
-    set({ isLoading: true }); // Comienza la carga
+    set({ isLoading: true });
     try {
       const response = await axios.post("/api-token-auth/", {
         username,
@@ -44,19 +44,17 @@ const useStore = create((set) => ({
 
       const userResponse = await axios.get("/usuarios/me/");
 
-      // Actualiza el estado con la información del usuario
       set({
         user: userResponse.data,
         isLoggedIn: true,
         navbarNeedsUpdate: true,
-        isLoading: false, // Termina la carga después de obtener la información del usuario
+        isLoading: false,
       });
 
-      // Redirige después de actualizar el estado
       navigate("/");
     } catch (error) {
       console.error("Error en el inicio de sesión:", error);
-      set({ isLoading: false }); // Termina la carga en caso de error
+      set({ isLoading: false });
       toast({
         title: "Error de inicio de sesión",
         description:
@@ -82,8 +80,6 @@ const useStore = create((set) => ({
     });
   },
 
-  // Dentro de useStore
-  // En useStore.js
   fetchProducts: async (page = 1, search = "") => {
     try {
       const response = await axios.get("/productos/", {
@@ -91,10 +87,10 @@ const useStore = create((set) => ({
       });
       console.log("Respuesta del backend:", response);
       set({ products: response.data.results || [] });
-      return Promise.resolve(response.data.results); // Devuelve una promesa
+      return Promise.resolve(response.data.results);
     } catch (error) {
       console.error("Error al obtener productos:", error);
-      return Promise.reject(error); // Rechaza la promesa en caso de error
+      return Promise.reject(error);
     }
   },
 

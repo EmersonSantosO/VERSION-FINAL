@@ -49,7 +49,7 @@ const UserManagement = () => {
       await axios.delete(`/usuarios/${userId}/`, {
         headers: { Authorization: `Token ${token}` },
       });
-      fetchUsers(); // Actualiza la lista después de eliminar
+      fetchUsers();
       toast({
         title: "Usuario Eliminado",
         description: "El usuario se ha eliminado correctamente.",
@@ -69,7 +69,6 @@ const UserManagement = () => {
     }
   };
 
-  // Mostrar mensaje si el usuario no es administrador
   if (user?.rol !== "administrador") {
     return (
       <Box p="8" bg={bgColor} color={textColor}>

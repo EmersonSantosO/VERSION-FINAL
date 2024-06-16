@@ -25,7 +25,7 @@ const VentaForm = ({ isOpen, onClose }) => {
   const { errors, isSubmitting } = formState;
   const toast = useToast();
   const addVenta = useStore((state) => state.addVenta);
-  const products = useStore((state) => state.products); // Asume que ya tienes los productos en el estado local
+  const products = useStore((state) => state.products);
 
   const createVenta = (data) => {
     addVenta(data);

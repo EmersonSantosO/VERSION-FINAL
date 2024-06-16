@@ -17,7 +17,7 @@ const UserActions = () => {
         duration: 3000,
         isClosable: true,
       });
-      fetchUsers(); // Refetch users after deletion
+      fetchUsers();
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
       toast({

@@ -9,30 +9,25 @@ const Productos = () => {
   const fetchProducts = useStore((state) => state.fetchProducts);
   const queryClient = useQueryClient();
 
-  // Usa useQuery para gestionar la solicitud de productos
   const {
     isLoading,
     data: products,
     error,
   } = useQuery("products", fetchProducts, { staleTime: Infinity });
 
-  // Define la mutación para eliminar productos
   const deleteProductMutation = useMutation(
     useStore((state) => state.deleteProduct),
     {
       onSuccess: () => {
-        // Invalida la caché de productos después de eliminar uno
         queryClient.invalidateQueries("products");
       },
     }
   );
 
-  // Define la función handleDelete
   const handleDelete = (productId) => {
     deleteProductMutation.mutate(productId);
   };
 
-  // Manejo de errores
   if (error) {
     return (
       <Box p="8">
@@ -53,7 +48,6 @@ const Productos = () => {
       </Heading>
       <ProductForm />
 
-      {/* Pasa products, isLoading y handleDelete a ProductList */}
       <ProductList
         products={products}
         isLoading={isLoading}

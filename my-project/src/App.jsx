@@ -24,7 +24,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const queryClient = new QueryClient();
 
 function App() {
-  const { initializeStore, isLoading } = useStore(); // Desestructuración
+  const { initializeStore, isLoading } = useStore();
 
   useEffect(() => {
     initializeStore();
